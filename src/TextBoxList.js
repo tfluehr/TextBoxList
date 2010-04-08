@@ -82,14 +82,52 @@
       }).bind(this));
     }
   });
-  
+  var TextboxLists = $H(); // for caching instances so we only need to add one set of observers for keyup and click
+// I don't think this is needed
+//  document.observe('keydown', (function(ev){
+//    var list = ev.findElement('.TextboxList');
+//    if (list) {
+//      if (ev.keyCode == Event.KEY_BACKSPACE) {
+//        ev.stop();
+//      }
+//    }
+//  }).bind(this))
+  document.observe('keyup', (function(ev){
+    var list = ev.findElement('.TextboxList');
+    if (list) {
+      var listObj = TextboxLists.get(list.identify());
+      if (listObj) {
+        if (ev.keyCode == Event.KEY_BACKSPACE) {
+          ev.stop();
+        }
+        if (!listObj.current) {
+          return;
+        }
+        switch (ev.keyCode) {
+          case Event.KEY_LEFT:
+            return listObj.move('left');
+          case Event.KEY_RIGHT:
+            return listObj.move('right');
+          case Event.KEY_DELETE:
+          case Event.KEY_BACKSPACE:
+            return listObj.moveDispose();
+        }
+      }
+    }
+  }).bind(this)).observe('click', function(ev){
+    if (!ev.findElement('.TextboxList')) {
+      TextboxLists.each(function(item){
+        item.value.blur();
+      });
+    }
+  });
   TextboxList = Class.create({
     initialize: function(element, options, data){
       this.options = Object.deepExtend({
         autoComplete: {
-          'opacity': 0.8, // opacity of drop down
-          'maxresults': 10, // max results to display in drop down
-          'minchars': 1, // min characters to show dropdown
+          opacity: 0.8, // opacity of drop down
+          maxresults: 10, // max results to display in drop down
+          minchars: 1, // min characters to show dropdown
           message: '&nbsp;', // message to be displayed 
           showMessage: false // whether to show the message on focus
         },
@@ -108,17 +146,21 @@
       this.current = false;
       this.setupMainElements();
       this.makeResizable(this.maininput);
-      this.setEvents();
       this.setupAutoComplete();
       this.data = data || [];
+      // create initial items
       this.data.each(function(item){
-        
-      }, this);
+      
+            }, this);
     },
+    /*
+     * Create/rearrage required elements for the text input box
+     */
     setupMainElements: function(){
       this.container = new Element('div', { // container to hold all controls
         'class': 'TextboxList'
       });
+      TextboxLists.set(this.container.identify(), this);
       this.maininput = this.createInput({ // input to type into
         'class': 'maininput'
       });
@@ -138,6 +180,9 @@
         }
       }).bind(this));
     },
+    /*
+     * Create required elements for the autocomplete
+     */
     setupAutoComplete: function(){
       var autoholder = new Element('div', {
         'class': 'AutoComplete'
@@ -156,35 +201,11 @@
         this.curOn = false;
       }).bind(this));
     },
-    setEvents: function(){
-      document.observe('keydown', (function(e){
-        if (!this.current) {
-          return;
-        }
-        if (this.current.retrieve('type') == 'box' && e.keyCode == Event.KEY_BACKSPACE) {
-          e.stop();
-        }
-      }).bind(this));
-      
-      document.observe('keyup', (function(e){
-        e.stop();
-        if (!this.current) {
-          return;
-        }
-        switch (e.keyCode) {
-          case Event.KEY_LEFT:
-            return this.move('left');
-          case Event.KEY_RIGHT:
-            return this.move('right');
-          case Event.KEY_DELETE:
-          case Event.KEY_BACKSPACE:
-            return this.moveDispose();
-        }
-      }).bind(this)).observe('click', (function(){
-            //        document.fire('blur');
-      }).bindAsEventListener(this));
-    },
     
+    /*
+     * Add a single item to the text list
+     * val: Object { content: '', val: ''}
+     */
     addItem: function(val){
       var id = this.options.className + '-' + this.count++;
       var el = this.createBox(val, {
@@ -201,14 +222,19 @@
       this.updateInputValue();
       return el;
     },
+    /*
+     * update the source input box with current values
+     * Set as a JSON string
+     */
     updateInputValue: function(){
       this.input.setValue(Object.toJSON(this.bits.values()));
     },
+    /*
+     * Remove a single item to the text list
+     * el: Element the element to remove
+     */
     removeItem: function(el){
       this.bits.unset(el.id);
-//      if (el.previous() && el.previous().retrieve('small')) {
-//        el.previous().remove();
-//      }
       if (this.current == el) {
         this.focus(el.next());
       }
@@ -230,11 +256,6 @@
       }
       this.blur();
       el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
-//      if (el.retrieve('small')) {
-//        el.setStyle({
-//          'display': 'block'
-//        });
-//      }
       if (el.retrieve('type') == 'input') {
         this.inputFocus(el);
         if (!nofocus) {
@@ -262,9 +283,6 @@
       //      else {
       //        this.current.fire('onBoxBlur');
       //      }
-//      if (this.current.retrieve('small') && !input.get('value') && this.options.hideempty) {
-//        this.current.hide();
-//      }
       this.current.removeClassName(this.options.className + '-' + this.current.retrieve('type') + '-focus');
       this.current = false;
       return this;
@@ -395,8 +413,18 @@
     },
     
     callEvent: function(el, type){
+      el.setStyle({
+        opacity: 1
+      });
       this.events.set(type, el);
-      el[type]();
+      if (type === 'blur') {
+        el.setStyle({
+          opacity: 0
+        });
+      }
+      else {
+        el[type]();
+      }
     },
     
     isSelfEvent: function(type){
