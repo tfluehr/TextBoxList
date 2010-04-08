@@ -85,28 +85,22 @@
   
   TextboxList = Class.create({
     initialize: function(element, options, data){
-      this.options = Object.extend({
-        autocomplete: {
-          'opacity': 0.8,
-          'maxresults': 10,
-          'minchars': 1,
-          message: '&nbsp;'
+      this.options = Object.deepExtend({
+        autoComplete: {
+          'opacity': 0.8, // opacity of drop down
+          'maxresults': 10, // max results to display in drop down
+          'minchars': 1, // min characters to show dropdown
+          message: '&nbsp;', // message to be displayed 
+          showMessage: false // whether to show the message on focus
         },
-        /*
-         onBoxFocus: $empty,
-         onBoxBlur: $empty*/
-        resizable: {},
         className: 'bit',
-        separator: '###',
-        extrainputs: true,
-        startinput: true,
         hideempty: true,
         fetchFile: undefined,
         results: 10,
         wordMatch: false
       }, options);
       
-      this.element = $(element).hide();
+      this.input = $(element).hide();
       
       this.bits = new Hash();
       this.events = new Hash();
@@ -117,6 +111,9 @@
       this.setEvents();
       this.setupAutoComplete();
       this.data = data || [];
+      this.data.each(function(item){
+        
+      }, this);
     },
     setupMainElements: function(){
       this.container = new Element('div', { // container to hold all controls
@@ -128,11 +125,11 @@
       this.holder = new Element('ul', { // hold the input and all selected items
         'class': 'holder'
       }).insert(this.maininput);
-      this.element.insert({
+      this.input.insert({
         'before': this.container
       });
       this.container.insert(this.holder);
-      this.container.insert(this.element);
+      this.container.insert(this.input);
       
       this.holder.observe('click', (function(event){
         //event.stop(); not sure why it was being stopped
@@ -147,12 +144,12 @@
       }).hide();
       this.autoMessage = new Element('div', { // message to display before user types anything
         'class': 'ACMessage'
-      }).update(this.options.autocomplete.message).hide();
+      }).update(this.options.autoComplete.message).hide();
       autoholder.insert(this.autoMessage);
       this.autoresults = new Element('ul').hide();
       autoholder.insert(this.autoresults);
       this.container.insert(autoholder);
-      this.autoholder = autoholder.setOpacity(this.options.autocomplete.opacity);
+      this.autoholder = autoholder.setOpacity(this.options.autoComplete.opacity);
       this.autoholder.observe('mouseover', (function(){
         this.curOn = true;
       }).bind(this)).observe('mouseout', (function(){
@@ -188,14 +185,9 @@
       }).bindAsEventListener(this));
     },
     
-    update: function(){
-      this.element.value = this.bits.values().join(this.options.separator);
-      return this;
-    },
-    
-    add: function(text){
+    addItem: function(val){
       var id = this.options.className + '-' + this.count++;
-      var el = this.createBox(text, {
+      var el = this.createBox(val, {
         'id': id
       });
       (this.current || this.maininput).insert({
@@ -205,37 +197,25 @@
         e.stop();
         this.focus(el);
       }).bind(this));
-      this.bits.set(id, text.value);
-      if (this.options.extrainputs && (this.options.startinput || el.previous())) {
-        this.addSmallInput(el, 'before');
-      }
+      this.bits.set(id, val);
+      this.updateInputValue();
       return el;
     },
-    
-    addSmallInput: function(el, where){
-      var input = this.createInput({
-        'class': 'smallinput'
-      });
-      el.insert({}[where] = input);
-      input.store('small', true);
-      this.makeResizable(input);
-      if (this.options.hideempty) {
-        input.hide();
-      }
-      return input;
+    updateInputValue: function(){
+      this.input.setValue(Object.toJSON(this.bits.values()));
     },
-    
-    dispose: function(el){
+    removeItem: function(el){
       this.bits.unset(el.id);
-      if (el.previous() && el.previous().retrieve('small')) {
-        el.previous().remove();
-      }
+//      if (el.previous() && el.previous().retrieve('small')) {
+//        el.previous().remove();
+//      }
       if (this.current == el) {
         this.focus(el.next());
       }
       this.autoFeed(el.retrieve('text').evalJSON(true));
       
-      el.remove();
+      el.stopObserving().remove();
+      this.updateInputValue();
       return this;
     },
     inputFocus: function(el){
@@ -250,11 +230,11 @@
       }
       this.blur();
       el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
-      if (el.retrieve('small')) {
-        el.setStyle({
-          'display': 'block'
-        });
-      }
+//      if (el.retrieve('small')) {
+//        el.setStyle({
+//          'display': 'block'
+//        });
+//      }
       if (el.retrieve('type') == 'input') {
         this.inputFocus(el);
         if (!nofocus) {
@@ -282,9 +262,9 @@
       //      else {
       //        this.current.fire('onBoxBlur');
       //      }
-      if (this.current.retrieve('small') && !input.get('value') && this.options.hideempty) {
-        this.current.hide();
-      }
+//      if (this.current.retrieve('small') && !input.get('value') && this.options.hideempty) {
+//        this.current.hide();
+//      }
       this.current.removeClassName(this.options.className + '-' + this.current.retrieve('type') + '-focus');
       this.current = false;
       return this;
@@ -315,7 +295,7 @@
         if (!this.current) {
           this.focus(this.maininput);
         }
-        this.dispose(li);
+        this.removeItem(li);
       }).bind(this));
       li.insert(a).store('text', Object.toJSON(text));
       return li;
@@ -425,10 +405,10 @@
     
     makeResizable: function(li){
       var el = li.retrieve('input');
-      el.store('resizable', new ResizableTextbox(el, Object.extend(this.options.resizable, {
+      el.store('resizable', new ResizableTextbox(el, {
         min: el.offsetWidth,
-        max: (this.element.getWidth() ? this.element.getWidth() : 0)
-      })));
+        max: (this.input.getWidth() ? this.input.getWidth() : 0)
+      }));
       return this;
     },
     
@@ -447,7 +427,7 @@
     
     moveDispose: function(){
       if (this.current.retrieve('type') == 'box') {
-        return this.dispose(this.current);
+        return this.removeItem(this.current);
       }
       if (this.checkInput() && this.bits.keys().length && this.current.previous()) {
         return this.focus(this.current.previous());
@@ -458,8 +438,10 @@
       this.autoholder.descendants().each(function(e){
         e.hide();
       });
-      if (!search || !search.strip() || (!search.length || search.length < this.options.autocomplete.minchars)) {
-        this.autoMessage.show();
+      if (!search || !search.strip() || (!search.length || search.length < this.options.autoComplete.minchars)) {
+        if (this.options.autoComplete.showMessage) {
+          this.autoMessage.show();
+        }
         this.resultsshown = false;
       }
       else {
@@ -480,7 +462,7 @@
           return str ? regexp.test(str.evalJSON(true).caption) : false;
         }).each(function(result, ti){
           count++;
-          if (ti >= this.options.autocomplete.maxresults) {
+          if (ti >= this.options.autoComplete.maxresults) {
             return;
           }
           var that = this;
@@ -554,7 +536,7 @@
       if (!el || !el.retrieve('result')) {
         return;
       }
-      this.add(el.retrieve('result'));
+      this.addItem(el.retrieve('result'));
       delete this.data[this.data.indexOf(Object.toJSON(el.retrieve('result')))];
       this.autoHide();
       var input = this.lastinput || this.current.retrieve('input');
@@ -580,5 +562,20 @@
       }
     }
   });
+  if (typeof(Object.deepExtend) == 'undefined') {
+    Object.deepExtend = function(destination, source){
+      for (var property in source) {
+        if (source[property] && source[property].constructor &&
+        source[property].constructor === Object) {
+          destination[property] = destination[property] || {};
+          arguments.callee(destination[property], source[property]);
+        }
+        else {
+          destination[property] = source[property];
+        }
+      }
+      return destination;
+    };
+  }
   
 })();
