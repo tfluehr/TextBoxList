@@ -58,31 +58,28 @@
   checkRequirements();
   
   var ResizableTextbox = Class.create({
-    // no idea what this is for
-    options: $H({
-      min: 5,
-      max: 500,
-      step: 7
-    }),
-    
+    // I think this is for the invisible text box you type into for auto complete
     initialize: function(element, options){
-      var that = this;
-      this.options.update(options);
+      this.options = Object.extend({
+        min: 5,
+        max: 500,
+        step: 7
+      }, options);
       this.el = $(element);
       this.width = this.el.offsetWidth;
-      this.el.observe('keyup', function(){
-        var newsize = that.options.get('step') * $F(this).length;
-        if (newsize <= that.options.get('min')) {
-          newsize = that.width;
+      this.el.observe('keyup', function(ev){
+        var newsize = this.options.step * $F(this.el).length;
+        if (newsize <= this.options.min) {
+          newsize = this.width;
         }
-        if (!($F(this).length == this.retrieve('rt-value') || newsize <= that.options.min || newsize >= that.options.max)) {
-          this.setStyle({
+        if (!($F(this.el).length == this.el.retrieve('rt-value') || newsize <= this.options.min || newsize >= this.options.max)) {
+          this.el.setStyle({
             'width': newsize
           });
         }
-      }).observe('keydown', function(){
-        this.store('rt-value', $F(this).length);
-      });
+      }.bind(this)).observe('keydown', function(ev){
+        this.el.store('rt-value', $F(this.el).length);
+      }.bind(this));
     }
   });
   
@@ -95,7 +92,6 @@
           'minchars': 1
         },
         /*
-         onInputBlur: $empty,
          onBoxFocus: $empty,
          onBoxBlur: $empty*/
         resizable: {},
@@ -108,46 +104,44 @@
         results: 10,
         wordMatch: false
       }, options);
-      top.console.log(1);
       
       this.element = $(element).hide();
-      top.console.log(2);
       
       this.bits = new Hash();
       this.events = new Hash();
       this.count = 0;
       this.current = false;
-      top.console.log(3);
+      this.container = new Element('div', {
+        'class': 'TextboxList'
+      });
       this.maininput = this.createInput({
         'class': 'maininput'
       });
-      top.console.log(4);
       this.holder = new Element('ul', {
         'class': 'holder'
       }).insert(this.maininput);
-      top.console.log(5);
+//      this.element.insert({
+//        'before': this.holder
+//      });
       this.element.insert({
-        'before': this.holder
+        'before': this.container
       });
-      top.console.log(6);
+      this.container.insert(this.holder);
+      this.container.insert(this.element);
+
       this.holder.observe('click', (function(event){
-        event.stop();
+        //event.stop(); not sure why it was being stopped
         if (this.maininput != this.current) {
           this.focus(this.maininput);
         }
       }).bind(this));
-      top.console.log(7);
       this.makeResizable(this.maininput);
-      top.console.log(8);
       this.setEvents();
-      top.console.log(9);
       
       // facestart
       this.data = data || [];
       var autoholder = 'facebook-auto';
-      top.console.log(autoholder);
       this.autoholder = $(autoholder).setOpacity(this.options.autocomplete.opacity);
-      top.console.log(this.autoholder);
       this.autoholder.observe('mouseover', (function(){
         this.curOn = true;
       }).bind(this)).observe('mouseout', (function(){
@@ -164,7 +158,7 @@
     },
     
     setEvents: function(){
-      document.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(e){
+      document.observe('keydown', (function(e){
         if (!this.current) {
           return;
         }
@@ -188,7 +182,7 @@
             return this.moveDispose();
         }
       }).bind(this)).observe('click', (function(){
-        document.fire('blur');
+//        document.fire('blur');
       }).bindAsEventListener(this));
     },
     
@@ -197,9 +191,9 @@
       return this;
     },
     
-    add: function(text, html){
+    add: function(text){
       var id = this.options.className + '-' + this.count++;
-      var el = this.createBox($pick(html, text), {
+      var el = this.createBox(text, {
         'id': id
       });
       (this.current || this.maininput).insert({
@@ -237,7 +231,7 @@
       if (this.current == el) {
         this.focus(el.next());
       }
-      this.autoFeed(el.retrieve('text').evalJSON(true)); 
+      this.autoFeed(el.retrieve('text').evalJSON(true));
       
       el.remove();
       return this;
@@ -247,7 +241,7 @@
     },
     focus: function(el, nofocus){
       if (!this.current) {
-        el.fire('focus');
+//        el.fire('focus');
       }
       else if (this.current == el) {
         return this;
@@ -266,7 +260,7 @@
         }
       }
       else {
-        el.fire('onBoxFocus');
+//        el.fire('onBoxFocus');
       }
       this.current = el;
       return this;
@@ -283,9 +277,9 @@
         }
         this.inputBlur(input);
       }
-      else {
-        this.current.fire('onBoxBlur');
-      }
+//      else {
+//        this.current.fire('onBoxBlur');
+//      }
       if (this.current.retrieve('small') && !input.get('value') && this.options.hideempty) {
         this.current.hide();
       }
@@ -564,7 +558,6 @@
       this.add(el.retrieve('result'));
       delete this.data[this.data.indexOf(Object.toJSON(el.retrieve('result')))];
       this.autoHide();
-      top.console.log(this.lastinput, ' ** ', this.current);
       var input = this.lastinput || this.current.retrieve('input');
       input.clear().focus();
       return this;
@@ -586,17 +579,7 @@
       else {
         return this.selectionStart;
       }
-    }//,
-    // no idea what this is for
-    //    filter:function(D,E){var C=[];for(var B=0,A=this.length;B<A;B++){if(D.call(E,this[B],B,this)){C.push(this[B]);}}return C;}
+    }
   });
   
-  var $pick = function(){
-    for (var B = 0, A = arguments.length; B < A; B++) {
-      if (!Object.isUndefined(arguments[B])) {
-        return arguments[B];
-      }
-    }
-    return null;
-  };
 })();

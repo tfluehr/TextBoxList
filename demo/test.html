@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <title>TextBoxList Demo</title>
+        <link rel="stylesheet" href="test.css" type="text/css" media="screen" title="Test Stylesheet" charset="utf-8" />
+        <script src="../lib/prototype.js" type="text/javascript" charset="utf-8">
+        </script>
+        <script src="../src/TextBoxList.js" type="text/javascript" charset="utf-8">
+        </script>
+    </head>
+    <body id="test">
+        <h1>TextBoxList Demo</h1>
+        <p>
+            <a href="http://www.interiders.com/2008/02/18/protomultiselect-02/">See article page</a>, <a href="http://www.interiders.com/wp-content/demos/ProtoMultiSelect/test.html">Go to Proto!MultiSelect demo</a>
+        </p>
+        <div id="text">
+        </div>
+        <form action="test_submit" method="get" accept-charset="utf-8">
+            <ol>
+                <li class="input-text">
+                    <label>
+                        Simple input
+                    </label>
+                    <input type="text" name="testinput" value="" id="testinput" />
+                </li>
+                <li id="facebook-list" class="input-text">
+                    <label>
+                        FacebookList input
+                    </label>
+                    <input type="text" value="" id="facebook-demo" />
+                    <div id="facebook-auto">
+                        <div class="default">
+                            Type the name of an argentine writer you like
+                        </div>
+                        <ul class="feed">
+                            <li value="1">
+                                Jorge Luis Borges
+                            </li>
+                            <li value="2">
+                                Julio Cortazar
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- These two writers will be added when the control is loaded -->
+                </li>
+            </ol>
+        </form>
+        <div id="button_container">
+            <button onclick="tlist2.update(); alert($F('facebook-demo'));return false;">
+                Get Values
+            </button>
+        </div>
+        <script language="JavaScript">
+            document.observe('dom:loaded', function(){
+            
+            
+              // init
+              tlist2 = new TextboxList('facebook-demo', {
+                fetchFile: 'fetched.txt'
+              });
+              
+              // fetch and feed
+              new Ajax.Request('json.txt', {
+                method: 'get',
+                onSuccess: function(transport){
+                  transport.responseText.evalJSON(true).each(function(t){
+                    tlist2.autoFeed(t)
+                  });
+                }
+              });
+            });
+        </script>
+    </body>
+</html>
