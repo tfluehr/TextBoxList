@@ -67,7 +67,7 @@
       }, options);
       this.el = $(element);
       this.width = this.el.offsetWidth;
-      this.el.observe('keyup', function(ev){
+      this.el.observe('keyup', (function(ev){
         var newsize = this.options.step * $F(this.el).length;
         if (newsize <= this.options.min) {
           newsize = this.width;
@@ -77,9 +77,9 @@
             'width': newsize
           });
         }
-      }.bind(this)).observe('keydown', function(ev){
+      }).bind(this)).observe('keydown', (function(ev){
         this.el.store('rt-value', $F(this.el).length);
-      }.bind(this));
+      }).bind(this));
     }
   });
   
@@ -89,7 +89,8 @@
         autocomplete: {
           'opacity': 0.8,
           'maxresults': 10,
-          'minchars': 1
+          'minchars': 1,
+          message: '&nbsp;'
         },
         /*
          onBoxFocus: $empty,
@@ -111,52 +112,53 @@
       this.events = new Hash();
       this.count = 0;
       this.current = false;
-      this.container = new Element('div', {
+      this.setupMainElements();
+      this.makeResizable(this.maininput);
+      this.setEvents();
+      this.setupAutoComplete();
+      this.data = data || [];
+    },
+    setupMainElements: function(){
+      this.container = new Element('div', { // container to hold all controls
         'class': 'TextboxList'
       });
-      this.maininput = this.createInput({
+      this.maininput = this.createInput({ // input to type into
         'class': 'maininput'
       });
-      this.holder = new Element('ul', {
+      this.holder = new Element('ul', { // hold the input and all selected items
         'class': 'holder'
       }).insert(this.maininput);
-//      this.element.insert({
-//        'before': this.holder
-//      });
       this.element.insert({
         'before': this.container
       });
       this.container.insert(this.holder);
       this.container.insert(this.element);
-
+      
       this.holder.observe('click', (function(event){
         //event.stop(); not sure why it was being stopped
         if (this.maininput != this.current) {
           this.focus(this.maininput);
         }
       }).bind(this));
-      this.makeResizable(this.maininput);
-      this.setEvents();
-      
-      // facestart
-      this.data = data || [];
-      var autoholder = 'facebook-auto';
-      this.autoholder = $(autoholder).setOpacity(this.options.autocomplete.opacity);
+    },
+    setupAutoComplete: function(){
+      var autoholder = new Element('div', {
+        'class': 'AutoComplete'
+      }).hide();
+      this.autoMessage = new Element('div', { // message to display before user types anything
+        'class': 'ACMessage'
+      }).update(this.options.autocomplete.message).hide();
+      autoholder.insert(this.autoMessage);
+      this.autoresults = new Element('ul').hide();
+      autoholder.insert(this.autoresults);
+      this.container.insert(autoholder);
+      this.autoholder = autoholder.setOpacity(this.options.autocomplete.opacity);
       this.autoholder.observe('mouseover', (function(){
         this.curOn = true;
       }).bind(this)).observe('mouseout', (function(){
         this.curOn = false;
       }).bind(this));
-      this.autoresults = this.autoholder.select('ul').first();
-      var children = this.autoresults.select('li');
-      children.each(function(el){
-        this.add({
-          value: el.readAttribute('value'),
-          caption: el.innerHTML
-        });
-      }, this);
     },
-    
     setEvents: function(){
       document.observe('keydown', (function(e){
         if (!this.current) {
@@ -182,7 +184,7 @@
             return this.moveDispose();
         }
       }).bind(this)).observe('click', (function(){
-//        document.fire('blur');
+            //        document.fire('blur');
       }).bindAsEventListener(this));
     },
     
@@ -241,7 +243,7 @@
     },
     focus: function(el, nofocus){
       if (!this.current) {
-//        el.fire('focus');
+            //        el.fire('focus');
       }
       else if (this.current == el) {
         return this;
@@ -260,7 +262,7 @@
         }
       }
       else {
-//        el.fire('onBoxFocus');
+            //        el.fire('onBoxFocus');
       }
       this.current = el;
       return this;
@@ -277,9 +279,9 @@
         }
         this.inputBlur(input);
       }
-//      else {
-//        this.current.fire('onBoxBlur');
-//      }
+      //      else {
+      //        this.current.fire('onBoxBlur');
+      //      }
       if (this.current.retrieve('small') && !input.get('value') && this.options.hideempty) {
         this.current.hide();
       }
@@ -452,20 +454,17 @@
       }
     },
     autoShow: function(search){
-      this.autoholder.setStyle({
-        'display': 'block'
-      });
+      this.autoholder.show();
       this.autoholder.descendants().each(function(e){
         e.hide();
       });
       if (!search || !search.strip() || (!search.length || search.length < this.options.autocomplete.minchars)) {
-        this.autoholder.select('.default').first().setStyle({
-          'display': 'block'
-        });
+        this.autoMessage.show();
         this.resultsshown = false;
       }
       else {
         this.resultsshown = true;
+        this.autoMessage.hide();
         this.autoresults.setStyle({
           'display': 'block'
         }).update('');
