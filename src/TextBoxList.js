@@ -147,11 +147,9 @@
       this.setupMainElements();
       this.makeResizable(this.maininput);
       this.setupAutoComplete();
-      this.data = data || [];
+      this.data = data || (this.input.getValue().empty()? [] : this.input.getValue().evalJSON());
       // create initial items
-      this.data.each(function(item){
-      
-            }, this);
+      this.data.each(this.addItem, this);
     },
     /*
      * Create/rearrage required elements for the text input box
@@ -230,22 +228,19 @@
       this.input.setValue(Object.toJSON(this.bits.values()));
     },
     /*
-     * Remove a single item to the text list
-     * el: Element the element to remove
+     * Remove a single item from the text list
+     * el: Element - the element to remove
      */
     removeItem: function(el){
       this.bits.unset(el.id);
       if (this.current == el) {
         this.focus(el.next());
       }
-      this.autoFeed(el.retrieve('text').evalJSON(true));
+      this.autoFeed(el.retrieve('text'));
       
       el.stopObserving().remove();
       this.updateInputValue();
       return this;
-    },
-    inputFocus: function(el){
-      this.autoShow();
     },
     focus: function(el, nofocus){
       if (!this.current) {
@@ -257,7 +252,7 @@
       this.blur();
       el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
       if (el.retrieve('type') == 'input') {
-        this.inputFocus(el);
+        this.autoShow();
         if (!nofocus) {
           this.callEvent(el.retrieve('input'), 'focus');
         }
@@ -293,12 +288,11 @@
         this.blurhide = this.autoHide.bind(this).delay(0.1);
       }
     },
-    createBoxLI: function(text, options){
-      return new Element('li', options).addClassName(this.options.className + '-box').update(text.caption).store('type', 'box');
-    },
     
-    createBox: function(text, options){
-      var li = this.createBoxLI(text, options);
+    createBox: function(val, options){
+      var li = new Element('li', Object.extend(options,{
+        'class': this.options.className + '-box'
+      })).update(val.caption).store('type', 'box');
       li.observe('mouseover', function(){
         this.addClassName('bit-hover');
       }).observe('mouseout', function(){
@@ -315,7 +309,7 @@
         }
         this.removeItem(li);
       }).bind(this));
-      li.insert(a).store('text', Object.toJSON(text));
+      li.insert(a).store('text', val);
       return li;
     },
     
@@ -553,9 +547,9 @@
       return this;
     },
     
-    autoFeed: function(text){
-      if (this.data.indexOf(Object.toJSON(text)) == -1) {
-        this.data.push(Object.toJSON(text));
+    autoFeed: function(val){
+      if (this.data.indexOf(Object.toJSON(val)) == -1) {
+        this.data.push(Object.toJSON(val));
       }
       return this;
     },
