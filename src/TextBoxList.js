@@ -176,6 +176,14 @@
       this.holder.observe('click', (function(ev){
         //event.stop(); not sure why it was being stopped
         var el;
+        if ((el = ev.findElement('.closebutton'))){
+          ev.stop();
+          if (!this.current) {
+            this.focus(this.maininput);
+          }
+          this.removeItem(el.up('li'));
+          return;
+        }
         if ((el = ev.findElement('.' + this.options.className + '-box'))) {
           ev.stop();
           this.focus(el);
@@ -183,7 +191,17 @@
         else if (this.maininput != this.current) {
           this.focus(this.maininput);
         }
-      }).bind(this));
+      }).bind(this)).observe('mouseover', function(ev){
+        var el;
+        if ((el = ev.findElement('.' + this.options.className + '-box'))) {
+          el.addClassName('bit-hover');
+        }
+      }.bind(this)).observe('mouseout', function(ev){
+        var el;
+        if ((el = ev.findElement('.' + this.options.className + '-box'))) {
+          el.removeClassName('bit-hover');
+        }
+      }.bind(this));
     },
     /*
      * Create required elements for the autocomplete
@@ -212,6 +230,7 @@
       }).bind(this)).observe('mouseout', (function(){
         this.curOn = false;
       }).bind(this));
+      
       autoholder.insert(this.autoresults);
       this.container.insert(autoholder);
       this.autoholder = autoholder.setOpacity(this.options.autoComplete.opacity);
@@ -306,22 +325,10 @@
       var li = new Element('li', Object.extend(options, {
         'class': this.options.className + '-box'
       })).update(val.caption).store('type', 'box');
-      li.observe('mouseover', function(){
-        this.addClassName('bit-hover');
-      }).observe('mouseout', function(){
-        this.removeClassName('bit-hover');
-      });
       var a = new Element('a', {
         'href': '#',
         'class': 'closebutton'
       });
-      a.observe('click', (function(e){
-        e.stop();
-        if (!this.current) {
-          this.focus(this.maininput);
-        }
-        this.removeItem(li);
-      }).bind(this));
       li.insert(a).store('value', val);
       return li;
     },
