@@ -83,15 +83,15 @@
     }
   });
   var TextboxLists = $H(); // for caching instances so we only need to add one set of observers for keyup and click
-// I don't think this is needed
-//  document.observe('keydown', (function(ev){
-//    var list = ev.findElement('.TextboxList');
-//    if (list) {
-//      if (ev.keyCode == Event.KEY_BACKSPACE) {
-//        ev.stop();
-//      }
-//    }
-//  }).bind(this))
+  // I don't think this is needed
+  //  document.observe('keydown', (function(ev){
+  //    var list = ev.findElement('.TextboxList');
+  //    if (list) {
+  //      if (ev.keyCode == Event.KEY_BACKSPACE) {
+  //        ev.stop();
+  //      }
+  //    }
+  //  }).bind(this))
   document.observe('keyup', (function(ev){
     var list = ev.findElement('.TextboxList');
     if (list) {
@@ -135,7 +135,8 @@
         hideempty: true,
         fetchFile: undefined,
         results: 10,
-        wordMatch: false
+        wordMatch: false,
+        uniqueValues: true
       }, options);
       
       this.input = $(element).hide();
@@ -147,7 +148,7 @@
       this.setupMainElements();
       this.makeResizable(this.maininput);
       this.setupAutoComplete();
-      this.data = data || (this.input.getValue().empty()? [] : this.input.getValue().evalJSON());
+      this.data = data || (this.input.getValue().empty() ? [] : this.input.getValue().evalJSON());
       // create initial items
       this.data.each(this.addItem, this);
     },
@@ -190,6 +191,18 @@
       }).update(this.options.autoComplete.message).hide();
       autoholder.insert(this.autoMessage);
       this.autoresults = new Element('ul').hide();
+      this.autoresults.observe('click', (function(ev){
+        var el = ev.findElement('.auto-item');
+        if (el) {
+          ev.stop();
+          this.autoAdd(el);
+        }
+      }).bind(this)).observe('mouseover', (function(ev){
+        var el = ev.findElement('.auto-item');
+        if (el) {
+          this.autoFocus(el);
+        }
+      }).bind(this));
       autoholder.insert(this.autoresults);
       this.container.insert(autoholder);
       this.autoholder = autoholder.setOpacity(this.options.autoComplete.opacity);
@@ -236,7 +249,7 @@
       if (this.current == el) {
         this.focus(el.next());
       }
-      this.autoFeed(el.retrieve('text'));
+      this.autoFeed(el.retrieve('value'));
       
       el.stopObserving().remove();
       this.updateInputValue();
@@ -290,7 +303,7 @@
     },
     
     createBox: function(val, options){
-      var li = new Element('li', Object.extend(options,{
+      var li = new Element('li', Object.extend(options, {
         'class': this.options.className + '-box'
       })).update(val.caption).store('type', 'box');
       li.observe('mouseover', function(){
@@ -309,7 +322,7 @@
         }
         this.removeItem(li);
       }).bind(this));
-      li.insert(a).store('text', val);
+      li.insert(a).store('value', val);
       return li;
     },
     
@@ -480,23 +493,25 @@
           regexp = new RegExp(search, 'i');
         }
         var count = 0;
-        this.data.filter(function(str){
-          return str ? regexp.test(str.evalJSON(true).caption) : false;
-        }).each(function(result, ti){
+        this.data.filter(function(obj){
+          var returnVal = obj ? regexp.test(obj.caption) : false;
+          if (returnVal && this.options.uniqueValues){
+            returnVal = !this.bits.find(function(item){
+              return item.value.caption === obj.caption;
+            });
+          }
+          return returnVal;
+        }, this).each(function(result, ti){
           count++;
           if (ti >= this.options.autoComplete.maxresults) {
             return;
           }
-          var that = this;
-          var el = new Element('li');
-          el.observe('click', function(e){
-            e.stop();
-            that.autoAdd(this);
-          }).observe('mouseover', function(){
-            that.autoFocus(this);
-          }).update(this.autoHighlight(result.evalJSON(true).caption, search));
+          var el = new Element('li',{
+            'class': 'auto-item'
+          });
+          el.update(this.autoHighlight(result.caption, search));
           this.autoresults.insert(el);
-          el.store('result', result.evalJSON(true));
+          el.store('result', result);
           if (ti === 0) {
             this.autoFocus(el);
           }
@@ -548,8 +563,10 @@
     },
     
     autoFeed: function(val){
-      if (this.data.indexOf(Object.toJSON(val)) == -1) {
-        this.data.push(Object.toJSON(val));
+      if (!this.data.find(function(item){
+        return item.caption === val.caption;
+      })) {
+        this.data.push(val);
       }
       return this;
     },

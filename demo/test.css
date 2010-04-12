@@ -61,6 +61,47 @@
     width: 20px;
 }
 
+.TextboxList ul.holder li.bit-box:hover
+{
+    background: #BBCEF1;
+    border: 1px solid #6D95E0;
+}
+
+.TextboxList ul.holder li.bit-box-focus
+{
+    border-color: #598BEC;
+    background: #598BEC;
+    color: #fff;
+}
+
+.TextboxList ul.holder li.bit-box a.closebutton
+{
+    position: absolute;
+    right: 4px;
+    top: 5px;
+    display: block;
+    width: 7px;
+    height: 7px;
+    font-size: 1px;
+    background: url('../lib/close.gif');
+}
+
+.TextboxList ul.holder li.bit-box a.closebutton:hover
+{
+    background-position: 7px;
+}
+
+.TextboxList ul.holder li.bit-box-focus a.closebutton, ul.holder li.bit-box-focus a.closebutton:hover
+{
+    background-position: bottom;
+}
+
+.TextboxList ul.holder li.bit-box, #apple-list ul.holder li.bit-box
+{
+    padding-right: 15px;
+    position: relative;
+}
+
 /* Autocompleter */
 .TextboxList .AutoComplete
 {
@@ -160,11 +201,6 @@ form ul.holder
     width: 500px;
 }
 
-#facebook-list ul.holder li.bit-box, #apple-list ul.holder li.bit-box
-{
-    padding-right: 15px;
-    position: relative;
-}
 
 #apple-list ul.holder li.bit-input
 {
@@ -176,40 +212,6 @@ form ul.holder
     width: 5px;
 }
 
-ul.holder li.bit-hover
-{
-    background: #BBCEF1;
-    border: 1px solid #6D95E0;
-}
-
-ul.holder li.bit-box-focus
-{
-    border-color: #598BEC;
-    background: #598BEC;
-    color: #fff;
-}
-
-ul.holder li.bit-box a.closebutton
-{
-    position: absolute;
-    right: 4px;
-    top: 5px;
-    display: block;
-    width: 7px;
-    height: 7px;
-    font-size: 1px;
-    background: url('../lib/close.gif');
-}
-
-ul.holder li.bit-box a.closebutton:hover
-{
-    background-position: 7px;
-}
-
-ul.holder li.bit-box-focus a.closebutton, ul.holder li.bit-box-focus a.closebutton:hover
-{
-    background-position: bottom;
-}
 
 
 #demo ul.holder li.bit-input input
