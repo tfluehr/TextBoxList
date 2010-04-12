@@ -129,7 +129,8 @@
           maxresults: 10, // max results to display in drop down
           minchars: 1, // min characters to show dropdown
           message: '&nbsp;', // message to be displayed 
-          showMessage: false // whether to show the message on focus
+          showMessage: false, // whether to show the message on focus
+          requestDelay: 0.3 // delay (in seconds) after last keypress before sending request.
         },
         className: 'bit',
         hideempty: true,
@@ -171,10 +172,15 @@
       });
       this.container.insert(this.holder);
       this.container.insert(this.input);
-      
-      this.holder.observe('click', (function(event){
+
+      this.holder.observe('click', (function(ev){
         //event.stop(); not sure why it was being stopped
-        if (this.maininput != this.current) {
+        var el;
+        if ((el = ev.findElement('.' + this.options.className + '-box'))) {
+          ev.stop();
+          this.focus(el);
+        }
+        else if (this.maininput != this.current) {
           this.focus(this.maininput);
         }
       }).bind(this));
@@ -202,15 +208,13 @@
         if (el) {
           this.autoFocus(el);
         }
-      }).bind(this));
-      autoholder.insert(this.autoresults);
-      this.container.insert(autoholder);
-      this.autoholder = autoholder.setOpacity(this.options.autoComplete.opacity);
-      this.autoholder.observe('mouseover', (function(){
         this.curOn = true;
       }).bind(this)).observe('mouseout', (function(){
         this.curOn = false;
       }).bind(this));
+      autoholder.insert(this.autoresults);
+      this.container.insert(autoholder);
+      this.autoholder = autoholder.setOpacity(this.options.autoComplete.opacity);
     },
     
     /*
@@ -225,10 +229,6 @@
       (this.current || this.maininput).insert({
         'before': el
       });
-      el.observe('click', (function(e){
-        e.stop();
-        this.focus(el);
-      }).bind(this));
       this.bits.set(id, val);
       this.updateInputValue();
       return el;
@@ -495,7 +495,7 @@
         var count = 0;
         this.data.filter(function(obj){
           var returnVal = obj ? regexp.test(obj.caption) : false;
-          if (returnVal && this.options.uniqueValues){
+          if (returnVal && this.options.uniqueValues) {
             returnVal = !this.bits.find(function(item){
               return item.value.caption === obj.caption;
             });
@@ -506,7 +506,7 @@
           if (ti >= this.options.autoComplete.maxresults) {
             return;
           }
-          var el = new Element('li',{
+          var el = new Element('li', {
             'class': 'auto-item'
           });
           el.update(this.autoHighlight(result.caption, search));
@@ -550,7 +550,6 @@
         this.autocurrent.removeClassName('auto-focus');
       }
       this.autocurrent = el.addClassName('auto-focus');
-      return this;
     },
     
     autoMove: function(direction){
