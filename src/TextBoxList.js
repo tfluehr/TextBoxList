@@ -130,7 +130,15 @@
           minchars: 1, // min characters to show dropdown
           message: '&nbsp;', // message to be displayed 
           showMessage: false, // whether to show the message on focus
-          requestDelay: 0.3 // delay (in seconds) after last keypress before sending request.
+          requestDelay: 0.3, // delay (in seconds) after last keypress before sending request.
+          avoidKeys: [
+            Event.KEY_UP,
+            Event.KEY_DOWN,
+            Event.KEY_LEFT,
+            Event.KEY_RIGHT,
+            Event.KEY_RETURN,
+            Event.KEY_ESC
+            ]
         },
         className: 'bit',
         hideempty: true,
@@ -356,34 +364,32 @@
         }
       }).bind(this));
       this.mainInput.observe('keyup', (function(e){
-        
-        switch (e.keyCode) {
-          case Event.KEY_UP:
-          case Event.KEY_DOWN:
-          case Event.KEY_LEFT:
-          case Event.KEY_RIGHT:
-          case Event.KEY_RETURN:
-          case Event.KEY_ESC:
-            break;
-          default:
-            if (!Object.isUndefined(this.options.fetchFile)) {
-              new Ajax.Request(this.options.fetchFile, {
-                method: 'get',
-                parameters: {
-                  keyword: this.mainInput.value
-                },
-                method: 'get',
-                onSuccess: (function(transport){
-                  transport.responseText.evalJSON(true).each((function(t){
-                    this.autoFeed(t);
-                  }).bind(this));
-                  this.autoShow(this.mainInput.value);
-                }).bind(this)
-              });
-            }
-            else if (this.dosearch) {
-              this.autoShow(this.mainInput.value);
-            }
+        if (this.mainInput.value.empty() && this.options.autoComplete.avoidKeys.find(function(item){
+          return item === e.keyCode;
+        })){
+          return;
+        }
+        if (!Object.isUndefined(this.options.fetchFile)
+          && this.mainInput.value != this.lastRequestValue) {
+          clearTimeout(this.fetchRequest);
+          this.fetchRequest = function(){
+            this.lastRequestValue = this.mainInput.value;
+            new Ajax.Request(this.options.fetchFile, {
+              parameters: {
+                keyword: this.mainInput.value
+              },
+              method: 'get',
+              onSuccess: (function(transport){
+                transport.responseText.evalJSON(true).each((function(t){
+                  this.autoFeed(t);
+                }).bind(this));
+                this.autoShow(this.mainInput.value);
+              }).bind(this)
+            });
+          }.bind(this).delay(this.options.autoComplete.requestDelay);
+        }
+        else if (this.dosearch) {
+          this.autoShow(this.mainInput.value);
         }
       }).bind(this));
       this.mainInput.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(e){
