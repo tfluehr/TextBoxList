@@ -335,8 +335,8 @@
     
     createInput: function(options){
       var li = this.createInputLI(options);
-      var input = li.retrieve('input');
-      input.observe('keydown', (function(e){
+      var mainInput = li.retrieve('input');
+      mainInput.observe('keydown', (function(e){
         this.dosearch = false;
         switch (e.keyCode) {
           case Event.KEY_UP:
@@ -364,7 +364,7 @@
             this.dosearch = true;
         }
       }).bind(this));
-      input.observe('keyup', (function(e){
+      mainInput.observe('keyup', (function(e){
       
         switch (e.keyCode) {
           case Event.KEY_UP:
@@ -377,23 +377,23 @@
               new Ajax.Request(this.options.fetchFile, {
                 method: 'get',
                 parameters: {
-                  keyword: input.value
+                  keyword: mainInput.value
                 },
                 method: 'get',
                 onSuccess: (function(transport){
                   transport.responseText.evalJSON(true).each((function(t){
                     this.autoFeed(t);
                   }).bind(this));
-                  this.autoShow(input.value);
+                  this.autoShow(mainInput.value);
                 }).bind(this)
               });
             }
             else if (this.dosearch) {
-              this.autoShow(input.value);
+              this.autoShow(mainInput.value);
             }
         }
       }).bind(this));
-      input.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(e){
+      mainInput.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(e){
         if (this.autoenter) {
           e.stop();
         }
