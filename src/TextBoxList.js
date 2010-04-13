@@ -147,7 +147,7 @@
       this.count = 0;
       this.current = false;
       this.setupMainElements();
-      this.makeResizable(this.maininput);
+      this.makeResizable(this.mainInput);
       this.setupAutoComplete();
       this.data = data || (this.input.getValue().empty() ? [] : this.input.getValue().evalJSON());
       // create initial items
@@ -161,12 +161,12 @@
         'class': 'TextboxList'
       });
       TextboxLists.set(this.container.identify(), this);
-      this.maininput = this.createInput({ // input to type into
-        'class': 'maininput'
-      });
+      
       this.holder = new Element('ul', { // hold the input and all selected items
         'class': 'holder'
-      }).insert(this.maininput);
+      }).insert(this.createInput({ // input to type into
+        'class': 'maininput'
+      }));
       this.input.insert({
         'before': this.container
       });
@@ -179,7 +179,7 @@
         if ((el = ev.findElement('.closebutton'))){
           ev.stop();
           if (!this.current) {
-            this.focus(this.maininput);
+            this.focus(this.mainInput);
           }
           this.removeItem(el.up('li'));
           return;
@@ -188,8 +188,8 @@
           ev.stop();
           this.focus(el);
         }
-        else if (this.maininput != this.current) {
-          this.focus(this.maininput);
+        else if (this.mainInput != this.current) {
+          this.focus(this.mainInput);
         }
       }).bind(this)).observe('mouseover', function(ev){
         var el;
@@ -245,7 +245,7 @@
       var el = this.createBox(val, {
         'id': id
       });
-      (this.current || this.maininput).insert({
+      (this.current || this.mainInput).insert({
         'before': el
       });
       this.bits.set(id, val);
@@ -283,14 +283,11 @@
       }
       this.blur();
       el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
-      if (el.retrieve('type') == 'input') {
+      if (el == this.mainInput) {
         this.autoShow();
-        if (!nofocus) {
-          this.callEvent(el.retrieve('input'), 'focus');
-        }
       }
-      else {
-            //        el.fire('onBoxFocus');
+      if (!nofocus) {
+        this.callEvent(el, 'focus');
       }
       this.current = el;
       return this;
@@ -300,22 +297,17 @@
       if (!this.current) {
         return this;
       }
-      if (this.current.retrieve('type') == 'input') {
-        var input = this.current.retrieve('input');
+      if (this.current == this.mainInput) {
         if (!noblur) {
-          this.callEvent(input, 'blur');
+          this.callEvent(this.mainInput, 'blur');
         }
-        this.inputBlur(input);
+        this.inputBlur(this.mainInput);
       }
-      //      else {
-      //        this.current.fire('onBoxBlur');
-      //      }
       this.current.removeClassName(this.options.className + '-' + this.current.retrieve('type') + '-focus');
       this.current = false;
       return this;
     },
     inputBlur: function(el){
-      this.lastinput = el;
       if (!this.curOn) {
         this.blurhide = this.autoHide.bind(this).delay(0.1);
       }
@@ -335,8 +327,7 @@
     
     createInput: function(options){
       var li = this.createInputLI(options);
-      var mainInput = li.retrieve('input');
-      mainInput.observe('keydown', (function(e){
+      this.mainInput.observe('keydown', (function(e){
         this.dosearch = false;
         switch (e.keyCode) {
           case Event.KEY_UP:
@@ -356,15 +347,15 @@
             break;
           case Event.KEY_ESC:
             this.autoHide();
-            if (this.current && this.current.retrieve('input')) {
-              this.current.retrieve('input').clear();
+            if (this.current) {
+              this.mainInput.clear();
             }
             break;
           default:
             this.dosearch = true;
         }
       }).bind(this));
-      mainInput.observe('keyup', (function(e){
+      this.mainInput.observe('keyup', (function(e){
       
         switch (e.keyCode) {
           case Event.KEY_UP:
@@ -377,23 +368,23 @@
               new Ajax.Request(this.options.fetchFile, {
                 method: 'get',
                 parameters: {
-                  keyword: mainInput.value
+                  keyword: this.mainInput.value
                 },
                 method: 'get',
                 onSuccess: (function(transport){
                   transport.responseText.evalJSON(true).each((function(t){
                     this.autoFeed(t);
                   }).bind(this));
-                  this.autoShow(mainInput.value);
+                  this.autoShow(this.mainInput.value);
                 }).bind(this)
               });
             }
             else if (this.dosearch) {
-              this.autoShow(mainInput.value);
+              this.autoShow(this.mainInput.value);
             }
         }
       }).bind(this));
-      mainInput.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(e){
+      this.mainInput.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(e){
         if (this.autoenter) {
           e.stop();
         }
@@ -406,39 +397,31 @@
       var li = new Element('li', {
         'class': this.options.className + '-input'
       });
-      var el = new Element('input', Object.extend(options, {
+      this.mainInput = new Element('input', Object.extend(options, {
         'type': 'text'
       }));
-      el.observe('click', function(e){
+      this.mainInput.observe('click', function(e){
         e.stop();
-      }).observe('focus', (function(e){
-        if (!this.isSelfEvent('focus')) {
-          this.focus(li, true);
-        }
-      }).bind(this)).observe('blur', (function(){
-        if (!this.isSelfEvent('blur')) {
-          this.blur(true);
-        }
-      }).bind(this)).observe('keydown', function(e){
+      })
+      .observe('keydown', function(e){
         this.store('lastvalue', this.value).store('lastcaret', this.getCaretPosition());
       });
-      var tmp = li.store('type', 'input').store('input', el).insert(el);
-      return tmp;
+      li.store('type', 'input').insert(this.mainInput);
+      return li;
     },
     
     callEvent: function(el, type){
-      el.setStyle({
-        opacity: 1
-      });
-      this.events.set(type, el);
-      if (type === 'blur') {
+      if (el == this.mainInput) {
         el.setStyle({
+          opacity: 1
+        });
+      }
+      else{
+        this.mainInput.setStyle({
           opacity: 0
         });
       }
-      else {
-        el[type]();
-      }
+      this.mainInput[type]();
     },
     
     isSelfEvent: function(type){
@@ -446,22 +429,20 @@
     },
     
     makeResizable: function(li){
-      var el = li.retrieve('input');
-      el.store('resizable', new ResizableTextbox(el, {
-        min: el.offsetWidth,
+      this.mainInput.store('resizable', new ResizableTextbox(this.mainInput, {
+        min: this.mainInput.offsetWidth,
         max: (this.input.getWidth() ? this.input.getWidth() : 0)
       }));
       return this;
     },
     
     checkInput: function(){
-      var input = this.current.retrieve('input');
-      return (!input.retrieve('lastvalue') || (input.getCaretPosition() === 0 && input.retrieve('lastcaret') === 0));
+      return (!this.mainInput.retrieve('lastvalue') || (this.mainInput.getCaretPosition() === 0 && this.mainInput.retrieve('lastcaret') === 0));
     },
     
     move: function(direction){
       var el = this.current[(direction == 'left' ? 'previous' : 'next')]();
-      if (el && (!this.current.retrieve('input') || ((this.checkInput() || direction == 'right')))) {
+      if (el && (this.checkInput() || direction == 'right')) {
         this.focus(el);
       }
       return this;
@@ -584,8 +565,7 @@
       this.addItem(el.retrieve('result'));
       delete this.data[this.data.indexOf(Object.toJSON(el.retrieve('result')))];
       this.autoHide();
-      var input = this.lastinput || this.current.retrieve('input');
-      input.clear().focus();
+      this.mainInput.clear().focus();
       return this;
     }
     
