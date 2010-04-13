@@ -101,7 +101,7 @@
           ev.stop();
         }
         if (!listObj.current) {
-          return;
+          listObj.current = listObj.mainInput;
         }
         switch (ev.keyCode) {
           case Event.KEY_LEFT:
@@ -356,10 +356,12 @@
         }
       }).bind(this));
       this.mainInput.observe('keyup', (function(e){
-      
+        
         switch (e.keyCode) {
           case Event.KEY_UP:
           case Event.KEY_DOWN:
+          case Event.KEY_LEFT:
+          case Event.KEY_RIGHT:
           case Event.KEY_RETURN:
           case Event.KEY_ESC:
             break;
