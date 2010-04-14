@@ -83,15 +83,6 @@
     }
   });
   var TextboxLists = $H(); // for caching instances so we only need to add one set of observers for keyup and click
-  // I don't think this is needed
-  //  document.observe('keydown', (function(ev){
-  //    var list = ev.findElement('.TextboxList');
-  //    if (list) {
-  //      if (ev.keyCode == Event.KEY_BACKSPACE) {
-  //        ev.stop();
-  //      }
-  //    }
-  //  }).bind(this))
   document.observe('keyup', (function(ev){
     var list = ev.findElement('.TextboxList');
     if (list) {
@@ -182,9 +173,8 @@
       this.container.insert(this.input);
 
       this.holder.observe('click', (function(ev){
-        //event.stop(); not sure why it was being stopped
         var el;
-        if ((el = ev.findElement('.closebutton'))){
+        if ((el = ev.findElement('.closebutton'))){ // x for removing a selected item
           ev.stop();
           if (!this.current) {
             this.focus(this.mainInput);
@@ -192,11 +182,11 @@
           this.removeItem(el.up('li'));
           return;
         }
-        if ((el = ev.findElement('.' + this.options.className + '-box'))) {
+        if ((el = ev.findElement('.' + this.options.className + '-box'))) { // clicked on a selected item (not the x)
           ev.stop();
           this.focus(el);
         }
-        else if (this.mainInput != this.current) {
+        else if (this.mainInput != this.current) { // clicked anywhere else so focus the text box for typing
           this.focus(this.mainInput);
         }
       }).bind(this)).observe('mouseover', function(ev){
@@ -397,7 +387,7 @@
           e.stop();
         }
         this.autoenter = false;
-      }).bind(this));
+      }).bind(this)).observe('blur', this.blur.bind(this,false));
       return li;
     },
     
