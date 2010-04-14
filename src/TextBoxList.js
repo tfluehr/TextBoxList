@@ -77,7 +77,8 @@
             'width': newsize
           });
         }
-      }).bind(this)).observe('keydown', (function(ev){
+      }).bind(this));
+      this.el.observe('keydown', (function(ev){
         this.el.store('rt-value', $F(this.el).length);
       }).bind(this));
     }
@@ -105,7 +106,8 @@
         }
       }
     }
-  }).bind(this)).observe('click', function(ev){
+  }).bind(this));
+  document.observe('click', function(ev){
     if (!ev.findElement('.TextboxList')) {
       TextboxLists.each(function(item){
         item.value.blur();
@@ -122,14 +124,7 @@
           message: '&nbsp;', // message to be displayed 
           showMessage: false, // whether to show the message on focus
           requestDelay: 0.3, // delay (in seconds) after last keypress before sending request.
-          avoidKeys: [
-            Event.KEY_UP,
-            Event.KEY_DOWN,
-            Event.KEY_LEFT,
-            Event.KEY_RIGHT,
-            Event.KEY_RETURN,
-            Event.KEY_ESC
-            ]
+          avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC]
         },
         className: 'bit',
         hideempty: true,
@@ -148,9 +143,136 @@
       this.setupMainElements();
       this.makeResizable(this.mainInput);
       this.setupAutoComplete();
+      this.setupEvents();
       this.data = data || (this.input.getValue().empty() ? [] : this.input.getValue().evalJSON());
       // create initial items
       this.data.each(this.addItem, this);
+    },
+    setupEvents: function(){
+      this.setupContainerEvents();
+      this.setupMainInputEvents();
+      this.setupAutoCompleteEvents();
+    },
+    setupContainerEvents: function(){
+      this.holder.observe('click', (function(ev){
+        var el;
+        if ((el = ev.findElement('.closebutton'))) { // x for removing a selected item
+          ev.stop();
+          if (!this.current) {
+            this.focus(this.mainInput);
+          }
+          this.removeItem(el.up('li'));
+          return;
+        }
+        if ((el = ev.findElement('.' + this.options.className + '-box'))) { // clicked on a selected item (not the x)
+          ev.stop();
+          this.focus(el);
+        }
+        else if (this.mainInput != this.current) { // clicked anywhere else so focus the text box for typing
+          this.focus(this.mainInput);
+        }
+      }).bind(this));
+      this.holder.observe('mouseover', (function(ev){
+        var el;
+        if ((el = ev.findElement('.' + this.options.className + '-box'))) {
+          el.addClassName('bit-hover');
+        }
+      }).bind(this));
+      this.holder.observe('mouseout', (function(ev){
+        var el;
+        if ((el = ev.findElement('.' + this.options.className + '-box'))) {
+          el.removeClassName('bit-hover');
+        }
+      }).bind(this));
+    },
+    setupMainInputEvents: function(){
+      this.mainInput.observe('keydown', (function(e){
+        this.dosearch = false;
+        switch (e.keyCode) {
+          case Event.KEY_UP:
+            e.stop();
+            return this.autoMove('up');
+          case Event.KEY_DOWN:
+            e.stop();
+            return this.autoMove('down');
+          case Event.KEY_RETURN:
+            e.stop();
+            if (!this.autocurrent) {
+              break;
+            }
+            this.autoAdd(this.autocurrent);
+            this.autocurrent = false;
+            this.autoenter = true;
+            break;
+          case Event.KEY_ESC:
+            this.autoHide();
+            if (this.current) {
+              this.mainInput.clear();
+            }
+            break;
+          default:
+            this.dosearch = true;
+        }
+      }).bind(this));
+      this.mainInput.observe('keyup', (function(e){
+        if (this.mainInput.value.empty() &&
+        this.options.autoComplete.avoidKeys.find(function(item){
+          return item === e.keyCode;
+        })) {
+          return;
+        }
+        if (!Object.isUndefined(this.options.fetchFile) &&
+        this.mainInput.value != this.lastRequestValue) {
+          clearTimeout(this.fetchRequest);
+          this.fetchRequest = (function(){
+            this.lastRequestValue = this.mainInput.value;
+            new Ajax.Request(this.options.fetchFile, {
+              parameters: {
+                keyword: this.mainInput.value
+              },
+              method: 'get',
+              onSuccess: (function(transport){
+                transport.responseText.evalJSON(true).each((function(t){
+                  this.autoFeed(t);
+                }).bind(this));
+                this.autoShow(this.mainInput.value);
+              }).bind(this)
+            });
+          }).bind(this).delay(this.options.autoComplete.requestDelay);
+        }
+        else if (this.dosearch) {
+          this.autoShow(this.mainInput.value);
+        }
+      }).bind(this));
+      this.mainInput.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(e){
+        if (this.autoenter) {
+          e.stop();
+        }
+        this.autoenter = false;
+      }).bind(this));
+      this.mainInput.observe('blur', this.blur.bind(this, false));
+      this.mainInput.observe('keydown', function(e){
+        this.store('lastvalue', this.value).store('lastcaret', this.getCaretPosition());
+      });
+    },
+    setupAutoCompleteEvents: function(){
+      this.autoresults.observe('click', (function(ev){
+        var el = ev.findElement('.auto-item');
+        if (el) {
+          ev.stop();
+          this.autoAdd(el);
+        }
+      }).bind(this));
+      this.autoresults.observe('mouseover', (function(ev){
+        var el = ev.findElement('.auto-item');
+        if (el) {
+          this.autoFocus(el);
+        }
+        this.curOn = true;
+      }).bind(this));
+      this.autoresults.observe('mouseout', (function(){
+        this.curOn = false;
+      }).bind(this));
     },
     /*
      * Create/rearrage required elements for the text input box
@@ -171,35 +293,6 @@
       });
       this.container.insert(this.holder);
       this.container.insert(this.input);
-
-      this.holder.observe('click', (function(ev){
-        var el;
-        if ((el = ev.findElement('.closebutton'))){ // x for removing a selected item
-          ev.stop();
-          if (!this.current) {
-            this.focus(this.mainInput);
-          }
-          this.removeItem(el.up('li'));
-          return;
-        }
-        if ((el = ev.findElement('.' + this.options.className + '-box'))) { // clicked on a selected item (not the x)
-          ev.stop();
-          this.focus(el);
-        }
-        else if (this.mainInput != this.current) { // clicked anywhere else so focus the text box for typing
-          this.focus(this.mainInput);
-        }
-      }).bind(this)).observe('mouseover', function(ev){
-        var el;
-        if ((el = ev.findElement('.' + this.options.className + '-box'))) {
-          el.addClassName('bit-hover');
-        }
-      }.bind(this)).observe('mouseout', function(ev){
-        var el;
-        if ((el = ev.findElement('.' + this.options.className + '-box'))) {
-          el.removeClassName('bit-hover');
-        }
-      }.bind(this));
     },
     /*
      * Create required elements for the autocomplete
@@ -213,21 +306,6 @@
       }).update(this.options.autoComplete.message).hide();
       autoholder.insert(this.autoMessage);
       this.autoresults = new Element('ul').hide();
-      this.autoresults.observe('click', (function(ev){
-        var el = ev.findElement('.auto-item');
-        if (el) {
-          ev.stop();
-          this.autoAdd(el);
-        }
-      }).bind(this)).observe('mouseover', (function(ev){
-        var el = ev.findElement('.auto-item');
-        if (el) {
-          this.autoFocus(el);
-        }
-        this.curOn = true;
-      }).bind(this)).observe('mouseout', (function(){
-        this.curOn = false;
-      }).bind(this));
       
       autoholder.insert(this.autoresults);
       this.container.insert(autoholder);
@@ -324,71 +402,7 @@
     },
     
     createInput: function(options){
-      var li = this.createInputLI(options);
-      this.mainInput.observe('keydown', (function(e){
-        this.dosearch = false;
-        switch (e.keyCode) {
-          case Event.KEY_UP:
-            e.stop();
-            return this.autoMove('up');
-          case Event.KEY_DOWN:
-            e.stop();
-            return this.autoMove('down');
-          case Event.KEY_RETURN:
-            e.stop();
-            if (!this.autocurrent) {
-              break;
-            }
-            this.autoAdd(this.autocurrent);
-            this.autocurrent = false;
-            this.autoenter = true;
-            break;
-          case Event.KEY_ESC:
-            this.autoHide();
-            if (this.current) {
-              this.mainInput.clear();
-            }
-            break;
-          default:
-            this.dosearch = true;
-        }
-      }).bind(this));
-      this.mainInput.observe('keyup', (function(e){
-        if (this.mainInput.value.empty() && this.options.autoComplete.avoidKeys.find(function(item){
-          return item === e.keyCode;
-        })){
-          return;
-        }
-        if (!Object.isUndefined(this.options.fetchFile)
-          && this.mainInput.value != this.lastRequestValue) {
-          clearTimeout(this.fetchRequest);
-          this.fetchRequest = function(){
-            this.lastRequestValue = this.mainInput.value;
-            new Ajax.Request(this.options.fetchFile, {
-              parameters: {
-                keyword: this.mainInput.value
-              },
-              method: 'get',
-              onSuccess: (function(transport){
-                transport.responseText.evalJSON(true).each((function(t){
-                  this.autoFeed(t);
-                }).bind(this));
-                this.autoShow(this.mainInput.value);
-              }).bind(this)
-            });
-          }.bind(this).delay(this.options.autoComplete.requestDelay);
-        }
-        else if (this.dosearch) {
-          this.autoShow(this.mainInput.value);
-        }
-      }).bind(this));
-      this.mainInput.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(e){
-        if (this.autoenter) {
-          e.stop();
-        }
-        this.autoenter = false;
-      }).bind(this)).observe('blur', this.blur.bind(this,false));
-      return li;
+      return this.createInputLI(options);
     },
     
     createInputLI: function(options){
@@ -398,23 +412,18 @@
       this.mainInput = new Element('input', Object.extend(options, {
         'type': 'text'
       }));
-      this.mainInput.observe('click', function(e){
-        e.stop();
-      })
-      .observe('keydown', function(e){
-        this.store('lastvalue', this.value).store('lastcaret', this.getCaretPosition());
-      });
       li.store('type', 'input').insert(this.mainInput);
       return li;
     },
     
     callEvent: function(el, type){
-      if (el == this.mainInput) {
+      console.log(el, type);
+      if (el.match('input')) {
         el.setStyle({
           opacity: 1
         });
       }
-      else{
+      else {
         this.mainInput.setStyle({
           opacity: 0
         });
