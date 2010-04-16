@@ -371,22 +371,27 @@
       return this;
     },
     focus: function(el, nofocus){
-      if (!this.current) {
-            //        el.fire('focus');
-      }
-      else if (this.current == el) {
+      if (el != this.container) {
+        if (!this.current) {
+                //        el.fire('focus');
+        }
+        else if (this.current == el) {
+          return this;
+        }
+        this.blur();
+        el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
+        if (el == this.mainInput) {
+          this.autoShow();
+        }
+        if (!nofocus) {
+          this.callEvent(el, 'focus');
+        }
+        this.current = el;
         return this;
       }
-      this.blur();
-      el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
-      if (el == this.mainInput) {
-        this.autoShow();
+      else {
+        this.callEvent(this.mainInput, 'focus');
       }
-      if (!nofocus) {
-        this.callEvent(el, 'focus');
-      }
-      this.current = el;
-      return this;
     },
     
     blur: function(noblur){
@@ -447,7 +452,9 @@
           opacity: 0
         });
       }
-      //      this.mainInput[type]();
+      if (type == 'focus'){
+        this.mainInput.focus();
+      }
     },
     
     isSelfEvent: function(type){
