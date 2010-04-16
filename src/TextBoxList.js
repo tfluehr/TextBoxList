@@ -149,75 +149,71 @@
       this.dosearch = false;
       switch (ev.keyCode) {
         case Event.KEY_LEFT:
-          if (!this.resultsshown) {
+          if (!this.resultsshown) { // auto complete not visible - highlite selected item to left if it exists
             return this.move('left');
           }
           break;
         case Event.KEY_RIGHT:
           if (!this.resultsshown) {
-            return this.move('right');
+            return this.move('right');// auto complete not visible - highlite selected item to right (or input box) if it exists
           }
           break;
         case Event.KEY_DELETE:
         case Event.KEY_BACKSPACE:
           if (!this.resultsshown) {
-            return this.moveDispose();
+            return this.moveDispose();// auto complete not visible - delete highlited item if exists
           }
           else if (this.mainInput.value.empty()) {
-            this.autoHide();
+            this.autoHide();// auto complete visible and input empty so hide auto complete
           }
           else {
-            this.dosearch = true;
+            this.dosearch = true; // activate auto complete lookup
           }
           break;
         case Event.KEY_UP:
           if (this.resultsshown) {
             ev.stop();
-            return this.autoMove('up');
+            return this.autoMove('up');// auto complete visible move highlite up.
           }
           break;
         case Event.KEY_DOWN:
           if (this.resultsshown) {
             ev.stop();
-            return this.autoMove('down');
+            return this.autoMove('down');// auto complete visible move highlite down.
           }
           break;
         case Event.KEY_RETURN:
           if (this.resultsshown) {
-            ev.stop();
+            ev.stop();// auto complete visible select highlited item
             this.autoAdd(this.autocurrent);
             this.autocurrent = false;
-            this.autoenter = true;
           }
           break;
         case Event.KEY_ESC:
           if (this.resultsshown) {
-            this.autoHide();
+            this.autoHide();// auto complete visible - hide it and clear the input.
             if (this.current) {
               this.mainInput.clear();
             }
           }
           break;
         default:
-          this.dosearch = true;
+          this.dosearch = true;// default activate auto complete search
           break;
       }
-      console.log('b: ', this.lastRequestValue, ', ', this.mainInput.value, ', ', this.dosearch);
       if (this.dosearch) {
-        this.focus(this.mainInput);
-//        top.console.log(this.lastRequestValue, ', ', this.mainInput.value);
+        this.focus(this.mainInput);// make sure input has focus
         if (this.mainInput.value.empty() &&
         this.options.autoComplete.avoidKeys.find(function(item){
           return item === ev.keyCode;
         })) {
-          return;
+          return;// if input is empty and keyCode is in ignore list the abort search
         }
-//        top.console.log(this.lastRequestValue, ', ', this.mainInput.value);
-        if (!Object.isUndefined(this.options.fetchFile))// &&
-        //this.mainInput.value != this.lastRequestValue) {
-         { clearTimeout(this.fetchRequest);
+        if (!Object.isUndefined(this.options.fetchFile))// ajax auto complete
+        {
+          clearTimeout(this.fetchRequest);
           this.fetchRequest = (function(){
-            if (this.mainInput.value != this.lastRequestValue) {
+            if (this.mainInput.value != this.lastRequestValue) { // only send request if value has changed since last request
               this.lastRequestValue = this.mainInput.value;
               new Ajax.Request(this.options.fetchFile, {
                 parameters: {
@@ -232,10 +228,10 @@
                 }).bind(this)
               });
             }
-          }).bind(this).delay(this.options.autoComplete.requestDelay);
+          }).bind(this).delay(this.options.autoComplete.requestDelay); // delay request by "options.autoComplete.requestDelay" seconds to wait for user to finish typing
         }
         else {
-          this.autoShow(this.mainInput.value);
+          this.autoShow(this.mainInput.value); // non ajax so use local dat for auto complete
         }
       }
     },
@@ -263,13 +259,13 @@
     },
     setupContainerEvents: function(){
       this.holder.observe('mouseover', (function(ev){
-        var el;
+        var el; // add classname on hover-in (not using :hover because of keyboard support)
         if ((el = ev.findElement('.' + this.options.className + '-box'))) {
           el.addClassName('bit-hover');
         }
       }).bind(this));
       this.holder.observe('mouseout', (function(ev){
-        var el;
+        var el;// remove classname on hover-out (not using :hover because of keyboard support)
         if ((el = ev.findElement('.' + this.options.className + '-box'))) {
           el.removeClassName('bit-hover');
         }
@@ -277,10 +273,9 @@
     },
     setupMainInputEvents: function(){
       this.mainInput.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(ev){
-        if (this.autoenter) {
-          ev.stop();
+        if (this.resultsshown && Event.KEY_RETURN == ev.keyCode) {
+          ev.stop(); // auto complete visible so stop on Return to prevent form submit
         }
-        this.autoenter = false;
       }).bind(this));
       this.mainInput.observe('blur', this.blur.bind(this, false));
       this.mainInput.observe('keydown', function(ev){
@@ -398,15 +393,12 @@
       if (!this.current) {
         return this;
       }
-      //      console.trace();
-      //      top.console.log('a: ', this.current, ' ', noblur);
       if (this.current == this.mainInput) {
         if (!noblur) {
           this.callEvent(this.mainInput, 'blur');
         }
         this.inputBlur(this.mainInput);
       }
-      //      top.console.log('b: ', this.current, ' ', noblur);
       this.current.removeClassName(this.options.className + '-' + this.current.retrieve('type') + '-focus');
       this.current = false;
       return this;
@@ -445,7 +437,6 @@
     },
     
     callEvent: function(el, type){
-      //      console.log(el, type);
       if (el.match('input')) {
         el.setStyle({
           opacity: 1
