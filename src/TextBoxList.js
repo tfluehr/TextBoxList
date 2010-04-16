@@ -110,6 +110,7 @@
           opacity: 0.8, // opacity of drop down
           maxresults: 10, // max results to display in drop down
           minchars: 1, // min characters to show dropdown
+          noResultsMessage: 'No values found',
           message: '&nbsp;', // message to be displayed 
           showMessage: false, // whether to show the message on focus
           requestDelay: 0.3, // delay (in seconds) after last keypress before sending request.
@@ -164,6 +165,7 @@
             return this.moveDispose();// auto complete not visible - delete highlited item if exists
           }
           else if (this.mainInput.value.empty()) {
+            this.lastRequestValue = null;
             this.autoHide();// auto complete visible and input empty so hide auto complete
           }
           else {
@@ -193,6 +195,7 @@
           if (this.resultsshown) {
             this.autoHide();// auto complete visible - hide it and clear the input.
             if (this.current) {
+              this.lastRequestValue = null;
               this.mainInput.clear();
             }
           }
@@ -215,18 +218,20 @@
           this.fetchRequest = (function(){
             if (this.mainInput.value != this.lastRequestValue) { // only send request if value has changed since last request
               this.lastRequestValue = this.mainInput.value;
-              new Ajax.Request(this.options.fetchFile, {
-                parameters: {
-                  keyword: this.mainInput.value
-                },
-                method: 'get',
-                onSuccess: (function(transport){
-                  transport.responseText.evalJSON(true).each((function(t){
-                    this.autoFeed(t);
-                  }).bind(this));
-                  this.autoShow(this.mainInput.value);
-                }).bind(this)
-              });
+              if (!this.mainInput.value.empty()) {
+                new Ajax.Request(this.options.fetchFile, {
+                  parameters: {
+                    keyword: this.mainInput.value
+                  },
+                  method: 'get',
+                  onSuccess: (function(transport){
+                    transport.responseText.evalJSON(true).each((function(t){
+                      this.autoFeed(t);
+                    }).bind(this));
+                    this.autoShow(this.mainInput.value);
+                  }).bind(this)
+                });
+              }
             }
           }).bind(this).delay(this.options.autoComplete.requestDelay); // delay request by "options.autoComplete.requestDelay" seconds to wait for user to finish typing
         }
@@ -324,7 +329,11 @@
       this.autoMessage = new Element('div', { // message to display before user types anything
         'class': 'ACMessage'
       }).update(this.options.autoComplete.message).hide();
+      this.autoNoResults = new Element('div', { // message to display when no autocomplete results
+        'class': 'ACMessage'
+      }).update(this.options.autoComplete.noResultsMessage).hide();
       autoholder.insert(this.autoMessage);
+      autoholder.insert(this.autoNoResults);
       this.autoresults = new Element('ul').hide();
       
       autoholder.insert(this.autoresults);
@@ -502,10 +511,7 @@
       }
       else {
         this.resultsshown = true;
-        this.autoMessage.hide();
-        this.autoresults.setStyle({
-          'display': 'block'
-        }).update('');
+        this.autoresults.show().update('');
         var regexp;
         if (this.options.wordMatch) {
           regexp = new RegExp("(^|\\s)" + search, 'i');
@@ -537,6 +543,10 @@
             this.autoFocus(el);
           }
         }, this);
+        if (count === 0){
+          this.autoNoResults.show();
+        }
+        
       }
       if (count > this.options.results) {
         this.autoresults.setStyle({
@@ -598,6 +608,7 @@
       this.addItem(el.retrieve('result'));
       delete this.data[this.data.indexOf(Object.toJSON(el.retrieve('result')))];
       this.autoHide();
+      this.lastRequestValue = null;
       this.mainInput.clear().focus();
       return this;
     }
