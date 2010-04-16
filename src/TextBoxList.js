@@ -1,5 +1,5 @@
 /*!
- Prototype based override of form.submit
+ Prototype based Text Box List
  http://tfluehr.com
  
  Copyright (c) 2010 Timothy Fluehr tim@tfluehr.com
