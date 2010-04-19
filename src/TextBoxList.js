@@ -407,8 +407,8 @@
           return item.value.value === obj.value;
         });
       }
-      if (foundObj && foundObj.length > 0){
-        if (all){
+      if (foundObj && foundObj.length > 0) {
+        if (all) {
           foundObj.each(function(item){
             this.removeElement($(item.key));
           }, this);
@@ -417,21 +417,21 @@
         else {
           this.removeElement($(foundObj.first().key));
           return foundObj.first();
-        }        
+        }
       }
     },
     focus: function(el, nofocus){
-      if (typeof(el.element) == 'function'){
+      if (typeof(el.element) == 'function') {
         el = el.element();
       }
       if (el != this.container) {
-        if (el == this.mainInput) {
-          this.autoShow(this.mainInput.value);
-        }
         if (this.current == el) {
           return this;
         }
         this.blur();
+        if (el == this.mainInput) {
+          this.autoShow(this.mainInput.value);
+        }
         el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
         if (!nofocus) {
           this.callEvent(el, 'focus');

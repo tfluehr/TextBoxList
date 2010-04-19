@@ -28,17 +28,13 @@
                     <label>
                         FacebookList input
                     </label>
-                    <input type="text" value="[{'caption':'Jorge Luis Borges', 'value': '1'},{'caption':'Julio Cortazar', 'value': '2'}]" id="facebook-demo" /><!-- These two writers will be added when the control is loaded -->
+                    <input type="text" id="facebook-demo" /><!-- These two writers will be added when the control is loaded -->
                 </li>
             </ol><input type="submit" value="Submit Form" id="submitBtn">
         </form>
-        <div id="button_container">
-            <button onclick="tlist2.update(); alert($F('facebook-demo'));return false;">
-                Get Values
-            </button>
-        </div>
-        <script language="JavaScript">
+         <script type="text/javascript">
           var tbl;
+          // value="[{'caption':'Jorge Luis Borges', 'value': '1'},{'caption':'Julio Cortazar', 'value': '2'}]"
             document.observe('dom:loaded', function(){
             
               tbl = new TextboxList('facebook-demo', {
