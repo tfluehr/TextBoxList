@@ -134,9 +134,10 @@
       this.makeResizable(this.mainInput);
       this.setupAutoComplete();
       this.setupEvents();
-      this.data = data || (this.input.getValue().empty() ? [] : this.input.getValue().evalJSON());
+      this.data = data || [];
+      var tempItems = (this.input.getValue().empty() ? [] : this.input.getValue().evalJSON());
       // create initial items
-      this.data.each(this.addItem, this);
+      tempItems.each(this.addItem, this);
     },
     setupEvents: function(){
       this.setupContainerEvents();
@@ -225,9 +226,10 @@
                   },
                   method: 'get',
                   onSuccess: (function(transport){
-                    transport.responseText.evalJSON(true).each((function(t){
-                      this.autoFeed(t);
-                    }).bind(this));
+                    this.data = transport.responseText.evalJSON(true);
+//                    transport.responseText.evalJSON(true).each((function(t){
+//                      this.autoFeed(t);
+//                    }).bind(this));
                     this.autoShow(this.mainInput.value);
                   }).bind(this)
                 });
@@ -236,7 +238,7 @@
           }).bind(this).delay(this.options.autoComplete.requestDelay); // delay request by "options.autoComplete.requestDelay" seconds to wait for user to finish typing
         }
         else {
-          this.autoShow(this.mainInput.value); // non ajax so use local dat for auto complete
+          this.autoShow(this.mainInput.value); // non ajax so use local data for auto complete
         }
       }
     },

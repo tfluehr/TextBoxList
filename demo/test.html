@@ -44,20 +44,37 @@
             
             
               // init
-              tlist2 = new TextboxList('facebook-demo', {
-                fetchFile: 'fetched.txt'
-              });
+//              tlist2 = new TextboxList('facebook-demo', {
+//                fetchFile: 'fetched.txt'
+//              });
               
-              // fetch and feed
-              new Ajax.Request('json.txt', {
+//              // fetch and feed
+//              new Ajax.Request('json.txt', {
+//                method: 'get',
+//                onSuccess: function(transport){
+//                  transport.responseText.evalJSON(true).each(function(t){
+//                    tlist2.autoFeed(t)
+//                  });
+//                }
+//              });
+//            });
+
+
+
+//            // value="[{'caption':'Jorge Luis Borges', 'value': '1'},{'caption':'Julio Cortazar', 'value': '2'}]"
+//              // init
+////              new TextboxList('facebook-demo', {
+////                fetchFile: 'fetched.txt'
+////              });
+//              
+//              // fetch and feed
+              new Ajax.Request('fetched.txt', {
                 method: 'get',
                 onSuccess: function(transport){
-                  transport.responseText.evalJSON(true).each(function(t){
-                    tlist2.autoFeed(t)
-                  });
+                  new TextboxList('facebook-demo', null, transport.responseText.evalJSON(true));
                 }
               });
-            });
+              });
         </script>
     </body>
 </html>
