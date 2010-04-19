@@ -212,7 +212,7 @@
         })) {
           return;// if input is empty and keyCode is in ignore list the abort search
         }
-        if (!Object.isUndefined(this.options.autoComplete.url))// ajax auto complete
+        if (this.options.autoComplete.url !== null)// ajax auto complete
         {
           clearTimeout(this.fetchRequest);
           this.fetchRequest = (function(){
@@ -221,7 +221,7 @@
               if (!this.mainInput.value.empty()) {
                 new Ajax.Request(this.options.autoComplete.url, {
                   parameters: {
-                    keyword: this.mainInput.value
+                    SearchValue: this.mainInput.value
                   },
                   method: 'get',
                   onSuccess: (function(transport){
