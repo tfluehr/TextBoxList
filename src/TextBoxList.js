@@ -284,6 +284,7 @@
         }
       }).bind(this));
       this.mainInput.observe('blur', this.blur.bind(this, false));
+      this.mainInput.observe('focus', this.focus.bindAsEventListener(this, false));
       this.mainInput.observe('keydown', function(ev){
         this.store('lastvalue', this.value).store('lastcaret', this.getCaretPosition());
       });
@@ -420,18 +421,18 @@
       }
     },
     focus: function(el, nofocus){
+      if (typeof(el.element) == 'function'){
+        el = el.element();
+      }
       if (el != this.container) {
-        if (!this.current) {
-                //        el.fire('focus');
+        if (el == this.mainInput) {
+          this.autoShow();
         }
-        else if (this.current == el) {
+        if (this.current == el) {
           return this;
         }
         this.blur();
         el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
-        if (el == this.mainInput) {
-          this.autoShow();
-        }
         if (!nofocus) {
           this.callEvent(el, 'focus');
         }
