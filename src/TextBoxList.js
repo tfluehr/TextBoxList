@@ -128,7 +128,6 @@
       
       this.bits = new Hash();
       this.events = new Hash();
-      this.count = 0;
       this.current = false;
       this.setupMainElements();
       this.makeResizable(this.mainInput);
@@ -227,9 +226,9 @@
                   method: 'get',
                   onSuccess: (function(transport){
                     this.data = transport.responseText.evalJSON(true);
-//                    transport.responseText.evalJSON(true).each((function(t){
-//                      this.autoFeed(t);
-//                    }).bind(this));
+                    //                    transport.responseText.evalJSON(true).each((function(t){
+                    //                      this.autoFeed(t);
+                    //                    }).bind(this));
                     this.autoShow(this.mainInput.value);
                   }).bind(this)
                 });
@@ -253,7 +252,7 @@
         if (!this.current) {
           this.focus(this.mainInput);
         }
-        this.removeItem(el.up('li'));
+        this.removeElement(el.up('li'));
         return;
       }
       else if ((el = ev.findElement('.' + this.options.className + '-box'))) { // clicked on a selected item (not the x)
@@ -342,13 +341,21 @@
       this.container.insert(autoholder);
       this.autoholder = autoholder.setOpacity(this.options.autoComplete.opacity);
     },
+    getId: function(){
+      var id;
+      do {
+        id = 'anonymous_element_' + Element.idCounter++;
+      }
+      while ($(id));
+      return id;
+    },
     
     /*
      * Add a single item to the text list
      * val: Object { content: '', val: ''}
      */
     addItem: function(val){
-      var id = this.options.className + '-' + this.count++;
+      var id = this.getId();
       var el = this.createBox(val, {
         'id': id
       });
@@ -370,7 +377,7 @@
      * Remove a single item from the text list
      * el: Element - the element to remove
      */
-    removeItem: function(el){
+    removeElement: function(el){
       this.bits.unset(el.id);
       if (this.current == el) {
         this.focus(el.next());
@@ -380,6 +387,37 @@
       el.stopObserving().remove();
       this.updateInputValue();
       return this;
+    },
+    removeItem: function(obj, all){
+      var id, foundObj;
+      if (typeof(obj.value) != 'undefined' &&
+      typeof(obj.caption) != 'undefined') {
+        foundObj = this.bits.findAll(function(item){
+          return item.value.value === obj.value && item.value.caption === obj.caption;
+        });
+      }
+      else if (typeof(obj.caption) != 'undefined') {
+        foundObj = this.bits.findAll(function(item){
+          return item.value.caption === obj.caption;
+        });
+      }
+      else if (typeof(obj.value) != 'undefined') {
+        foundObj = this.bits.findAll(function(item){
+          return item.value.value === obj.value;
+        });
+      }
+      if (foundObj && foundObj.length > 0){
+        if (all){
+          foundObj.each(function(item){
+            this.removeElement($(item.key));
+          }, this);
+          return foundObj;
+        }
+        else {
+          this.removeElement($(foundObj.first().key));
+          return foundObj.first();
+        }        
+      }
     },
     focus: function(el, nofocus){
       if (el != this.container) {
@@ -463,7 +501,7 @@
           opacity: 0
         });
       }
-      if (type == 'focus'){
+      if (type == 'focus') {
         this.mainInput.focus();
       }
     },
@@ -494,7 +532,7 @@
     
     moveDispose: function(){
       if (this.current.retrieve('type') == 'box') {
-        return this.removeItem(this.current);
+        return this.removeElement(this.current);
       }
       if (this.checkInput() && this.bits.keys().length && this.current.previous()) {
         return this.focus(this.current.previous());
@@ -545,7 +583,7 @@
             this.autoFocus(el);
           }
         }, this);
-        if (count === 0){
+        if (count === 0) {
           this.autoNoResults.show();
         }
         
