@@ -107,6 +107,7 @@
     initialize: function(element, options, data){
       this.options = Object.deepExtend({
         autoComplete: {
+          url: null,
           opacity: 0.8, // opacity of drop down
           maxresults: 10, // max results to display in drop down
           minchars: 1, // min characters to show dropdown
@@ -118,7 +119,6 @@
         },
         className: 'bit',
         hideempty: true,
-        fetchFile: undefined,
         results: 10,
         wordMatch: false,
         uniqueValues: true
@@ -212,14 +212,14 @@
         })) {
           return;// if input is empty and keyCode is in ignore list the abort search
         }
-        if (!Object.isUndefined(this.options.fetchFile))// ajax auto complete
+        if (!Object.isUndefined(this.options.autoComplete.url))// ajax auto complete
         {
           clearTimeout(this.fetchRequest);
           this.fetchRequest = (function(){
             if (this.mainInput.value != this.lastRequestValue) { // only send request if value has changed since last request
               this.lastRequestValue = this.mainInput.value;
               if (!this.mainInput.value.empty()) {
-                new Ajax.Request(this.options.fetchFile, {
+                new Ajax.Request(this.options.autoComplete.url, {
                   parameters: {
                     keyword: this.mainInput.value
                   },
