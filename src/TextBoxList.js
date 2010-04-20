@@ -92,14 +92,19 @@
       }
     }).bind(this));
     document.observe('click', function(ev){
-      var el = ev.findElement('.TextboxList');
-      if (el) {
-        TextboxLists.get(el.identify()).click(ev);
-      }
-      else { // not in TextBoxList so hide all
-        TextboxLists.each(function(item){
-          item.value.blur();
-        });
+      if (ev.isLeftClick()) {
+        var el = ev.findElement('.TextboxList, .TextboxListAutoComplete');
+        if (el && el.match('.TextboxListAutoComplete')){
+          el = $(el.retrieve('parentTextboxList'));
+        }
+        if (el) {
+          TextboxLists.get(el.identify()).click(ev);
+        }
+        else { // not in TextBoxList so hide all
+          TextboxLists.each(function(item){
+            item.value.blur();
+          });
+        }
       }
     });
   });
@@ -329,7 +334,7 @@
     setupAutoComplete: function(){
       var autoholder = new Element('div', {
         'class': 'TextboxListAutoComplete'
-      }).hide();
+      }).hide().store('parentTextboxList', this.container.identify());
       this.autoMessage = new Element('div', { // message to display before user types anything
         'class': 'ACMessage'
       }).update(this.options.autoComplete.message).hide();
