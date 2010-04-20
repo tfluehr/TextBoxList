@@ -117,11 +117,12 @@
           showMessage: false, // whether to show the message on focus
           requestDelay: 0.3, // delay (in seconds) after last keypress before sending request.
           parent: document.body,
+          startsWith: false,
+          regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}',
           avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC]
         },
         className: 'bit',
         results: 10,
-        wordMatch: false,
         uniqueValues: true
       }, options);
       
@@ -557,16 +558,10 @@
       else {
         this.resultsshown = true;
         this.autoresults.show().update('');
-        var regexp;
-        if (this.options.wordMatch) {
-          regexp = new RegExp("(^|\\s)" + search, 'i');
-        }
-        else {
-          regexp = new RegExp(search, 'i');
-        }
         var count = 0;
+        var regExp = new RegExp(this.options.autoComplete.regExp.replace('{0}', search), 'i');
         this.data.filter(function(obj){
-          var returnVal = obj ? regexp.test(obj.caption) : false;
+          var returnVal = obj ? regExp.test(obj.caption) : false;
           if (returnVal && this.options.uniqueValues) {
             returnVal = !this.bits.find(function(item){
               return item.value.caption === obj.caption;
@@ -581,7 +576,7 @@
           var el = new Element('li', {
             'class': 'auto-item'
           });
-          el.update(this.autoHighlight(result.caption, search));
+          el.update(this.autoHighlight(result.caption, regExp));
           this.autoresults.insert(el);
           el.store('result', result);
           if (ti === 0) {
@@ -607,7 +602,7 @@
     },
     
     autoHighlight: function(html, highlight){
-      return html.gsub(new RegExp(highlight, 'i'), function(match){
+      return html.gsub(highlight, function(match){
         return '<em>' + match[0] + '</em>';
       });
     },
