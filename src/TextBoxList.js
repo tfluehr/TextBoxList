@@ -109,6 +109,7 @@
         autoComplete: {
           url: null,
           opacity: 0.8, // opacity of drop down
+          limitResults: false,
           maxresults: 10, // max results to display in drop down
           minchars: 1, // min characters to show dropdown
           noResultsMessage: 'No values found',
@@ -119,7 +120,6 @@
           avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC]
         },
         className: 'bit',
-        hideempty: true,
         results: 10,
         wordMatch: false,
         uniqueValues: true
@@ -535,11 +535,12 @@
     
     moveDispose: function(){
       if (this.current.retrieve('type') == 'box') {
-        return this.removeElement(this.current);
+        this.removeElement(this.current);
       }
-      if (this.checkInput() && this.bits.keys().length && this.current.previous()) {
-        return this.focus(this.current.previous());
+      else if (this.checkInput() && this.bits.keys().length && this.current.previous()) {
+        this.focus(this.current.previous());
       }
+      this.autoPosition();
     },
     autoShow: function(search){
       this.autoPosition();
@@ -574,7 +575,7 @@
           return returnVal;
         }, this).each(function(result, ti){
           count++;
-          if (ti >= this.options.autoComplete.maxresults) {
+          if (this.options.autoComplete.limitResults && ti >= this.options.autoComplete.maxresults) {
             return;
           }
           var el = new Element('li', {
@@ -592,16 +593,16 @@
         }
         
       }
-      if (count > this.options.results) {
-        this.autoresults.setStyle({
-          'height': (this.options.results * 24) + 'px'
-        });
-      }
-      else {
-        this.autoresults.setStyle({
-          'height': (count ? (count * 24) : 0) + 'px'
-        });
-      }
+//      if (count > this.options.results) {
+//        this.autoresults.setStyle({
+//          'height': (this.options.results * 24) + 'px'
+//        });
+//      }
+//      else {
+//        this.autoresults.setStyle({
+//          'height': (count ? (count * 24) : 0) + 'px'
+//        });
+//      }
       return this;
     },
     
@@ -657,13 +658,14 @@
       return this;
     },
     autoPosition: function(){
-      var contOffset = this.container.viewportOffset();
+      var contOffset = this.holder.viewportOffset();
       var parentOffset = this.options.autoComplete.parent.viewportOffset();
       contOffset.top = contOffset.top - parentOffset.top;
       contOffset.left = contOffset.left - parentOffset.left;
       this.autoholder.setStyle({
         left: contOffset.left+'px',
-        top: (contOffset.top+this.container.getHeight())+'px'
+        top: (contOffset.top+this.container.getHeight())+'px',
+        width: this.holder.getWidth()+'px'
       });
 // dynamically set max depending on avail space?
 // would also scroll parent as needed?      

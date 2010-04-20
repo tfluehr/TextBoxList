@@ -6,28 +6,13 @@
     overflow: hidden;
     height: auto !important;
     height: 1%;
-    padding: 4px 5px 0;
+    padding: 0;
 }
-.TextboxList *:first-child + html ul.holder
-{
-    padding-bottom: 2px;
-}
-.TextboxList * html ul.holder
-{
-    padding-bottom: 2px;
-}
- /* ie7 and below */
 .TextboxList ul.holder li
 {
     float: left;
     list-style-type: none;
-    margin: 0 5px 4px 0;
-}
-
-.TextboxList ul.holder li.bit-box, 
-.TextboxList ul.holder li.bit-input input
-{
-    font: 11px "Lucida Grande", "Verdana";
+    margin: 2px 3px 2px 3px;
 }
 
 .TextboxList ul.holder li.bit-box
@@ -50,10 +35,10 @@
 .TextboxList ul.holder li.bit-input input
 {
     width: 150px;
-    margin: 0;
     border: none;
     outline: 0;
-    padding: 3px 0 2px;
+    padding: 0px;
+    margin: 4px 3px 2px 3px;
 }
  /* no left/right padding here please */
 .TextboxList ul.holder li.bit-input input.smallinput
