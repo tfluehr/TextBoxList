@@ -124,6 +124,8 @@
           parent: document.body,
           startsWith: false,
           regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}',
+          selectKey1:Event.KEY_RETURN,
+          selectKey2:Event.KEY_TAB,
           avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC]
         },
         className: 'bit',
@@ -191,7 +193,8 @@
             return this.autoMove('down');// auto complete visible move highlite down.
           }
           break;
-        case Event.KEY_RETURN:
+        case this.options.autoComplete.selectKey1:
+        case this.options.autoComplete.selectKey2:
           if (this.resultsshown) {
             ev.stop();// auto complete visible select highlited item
             this.autoAdd(this.autocurrent);
@@ -286,7 +289,7 @@
     },
     setupMainInputEvents: function(){
       this.mainInput.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(ev){
-        if (this.resultsshown && Event.KEY_RETURN == ev.keyCode) {
+        if (this.resultsshown && (this.options.autoComplete.selectKey1 == ev.keyCode || this.options.autoComplete.selectKey2 == ev.keyCode)) {
           ev.stop(); // auto complete visible so stop on Return to prevent form submit
         }
       }).bind(this));
