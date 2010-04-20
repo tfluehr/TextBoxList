@@ -115,6 +115,7 @@
           message: '&nbsp;', // message to be displayed 
           showMessage: false, // whether to show the message on focus
           requestDelay: 0.3, // delay (in seconds) after last keypress before sending request.
+          parent: document.body,
           avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC]
         },
         className: 'bit',
@@ -326,7 +327,7 @@
      */
     setupAutoComplete: function(){
       var autoholder = new Element('div', {
-        'class': 'AutoComplete'
+        'class': 'TextboxListAutoComplete'
       }).hide();
       this.autoMessage = new Element('div', { // message to display before user types anything
         'class': 'ACMessage'
@@ -339,7 +340,8 @@
       this.autoresults = new Element('ul').hide();
       
       autoholder.insert(this.autoresults);
-      this.container.insert(autoholder);
+      $(this.options.autoComplete.parent).insert(autoholder);
+      
       this.autoholder = autoholder.setOpacity(this.options.autoComplete.opacity);
     },
     getId: function(){
@@ -540,6 +542,7 @@
       }
     },
     autoShow: function(search){
+      this.autoPosition();
       this.autoholder.show();
       this.autoholder.descendants().each(function(ev){
         ev.hide();
@@ -652,8 +655,22 @@
       this.lastRequestValue = null;
       this.mainInput.clear().focus();
       return this;
+    },
+    autoPosition: function(){
+      var contOffset = this.container.viewportOffset();
+      var parentOffset = this.options.autoComplete.parent.viewportOffset();
+      contOffset.top = contOffset.top - parentOffset.top;
+      contOffset.left = contOffset.left - parentOffset.left;
+      this.autoholder.setStyle({
+        left: contOffset.left+'px',
+        top: (contOffset.top+this.container.getHeight())+'px'
+      });
+// dynamically set max depending on avail space?
+// would also scroll parent as needed?      
+//      this.options.autoComplete.maxresults = parseInt(($(this.options.autoComplete.parent).getHeight()/this.container.getHeight())/2,10);
+//      top.console.log(this.options.autoComplete.maxresults);
+      
     }
-    
   });
   
   //helper functions 
