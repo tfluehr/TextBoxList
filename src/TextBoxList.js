@@ -371,7 +371,7 @@
       var el = this.createBox(val, {
         'id': id
       });
-      (this.current || this.mainInput).insert({
+      this.mainInput.insert({
         'before': el
       });
       this.bits.set(id, val);
