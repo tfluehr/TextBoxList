@@ -503,16 +503,16 @@
     },
     
     callEvent: function(el, type){
-      if (el.match('input')) {
-        el.setStyle({
-          opacity: 1
-        });
-      }
-      else {
-        this.mainInput.setStyle({
-          opacity: 0
-        });
-      }
+//      if (el.match('input')) {
+//        el.setStyle({
+//          opacity: 1
+//        });
+//      }
+//      else {
+//        this.mainInput.setStyle({
+//          opacity: 0
+//        });
+//      }
       if (type == 'focus') {
         this.mainInput.focus();
       }
