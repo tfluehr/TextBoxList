@@ -92,7 +92,7 @@
       }
     }).bind(this));
     document.observe('click', function(ev){
-      if (ev.isLeftClick()) {
+      if (!ev.isRightClick() && !ev.isMiddleClick()) {
         var el = ev.findElement('.TextboxList, .TextboxListAutoComplete');
         if (el && el.match('.TextboxListAutoComplete')){
           el = $(el.retrieve('parentTextboxList'));
