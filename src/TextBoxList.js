@@ -98,7 +98,9 @@
           el = $(el.retrieve('parentTextboxList'));
         }
         if (el) {
-          TextboxLists.get(el.identify()).click(ev);
+          var tbl = TextboxLists.get(el.identify());
+          tbl.click(ev);
+          tbl.stopNextFocus = true;
         }
         else { // not in TextBoxList so hide all
           TextboxLists.each(function(item){
@@ -432,6 +434,10 @@
       }
     },
     focus: function(el, nofocus){
+      if (this.stopNextFocus){
+        this.stopNextFocus = false;
+        return;
+      }
       if (typeof(el.element) == 'function') {
         el = el.element();
       }
