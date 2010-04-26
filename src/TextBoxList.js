@@ -100,7 +100,6 @@
         if (el) {
           var tbl = TextboxLists.get(el.identify());
           tbl.click(ev);
-          tbl.stopNextFocus = true;
         }
         else { // not in TextBoxList so hide all
           TextboxLists.each(function(item){
@@ -128,7 +127,8 @@
           regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}',
           selectKey1:Event.KEY_RETURN,
           selectKey2:Event.KEY_TAB,
-          avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC]
+          // 16 is SHIFT
+          avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC, 16]
         },
         className: 'bit',
         results: 10,
@@ -217,13 +217,13 @@
           break;
       }
       if (this.dosearch) {
-        this.focus(this.mainInput);// make sure input has focus
         if (this.mainInput.value.empty() &&
         this.options.autoComplete.avoidKeys.find(function(item){
           return item === ev.keyCode;
         })) {
           return;// if input is empty and keyCode is in ignore list the abort search
         }
+        this.focus(this.mainInput);// make sure input has focus
         if (this.options.autoComplete.url !== null)// ajax auto complete
         {
           clearTimeout(this.fetchRequest);
@@ -296,7 +296,7 @@
         }
       }).bind(this));
       this.mainInput.observe('blur', this.blur.bind(this, false));
-      this.mainInput.observe('focus', this.focus.bindAsEventListener(this, false));
+      this.mainInput.observe('focus', this.focus.bindAsEventListener(this, false, true));
       this.mainInput.observe('keydown', function(ev){
         this.store('lastvalue', this.value).store('lastcaret', this.getCaretPosition());
       });
@@ -433,11 +433,7 @@
         }
       }
     },
-    focus: function(el, nofocus){
-      if (this.stopNextFocus){
-        this.stopNextFocus = false;
-        return;
-      }
+    focus: function(el, nofocus, onFocus){
       if (typeof(el.element) == 'function') {
         el = el.element();
       }
@@ -445,29 +441,29 @@
         if (this.current == el) {
           return this;
         }
-        this.blur();
+        this.blur(null, onFocus);
         if (el == this.mainInput) {
           this.autoShow(this.mainInput.value);
         }
         el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
         if (!nofocus) {
-          this.callEvent(el, 'focus');
+          this.callEvent(el, 'focus', onFocus);
         }
         this.current = el;
         return this;
       }
       else {
-        this.callEvent(this.mainInput, 'focus');
+        this.callEvent(this.mainInput, 'focus', onFocus);
       }
     },
     
-    blur: function(noblur){
+    blur: function(noblur, onFocus){
       if (!this.current) {
         return this;
       }
       if (this.current == this.mainInput) {
         if (!noblur) {
-          this.callEvent(this.mainInput, 'blur');
+          this.callEvent(this.mainInput, 'blur', onFocus);
         }
         this.inputBlur(this.mainInput);
       }
@@ -488,7 +484,9 @@
       var a = new Element('a', {
         'href': '#',
         'class': 'closebutton'
-      });
+      }).observe('focus', function(ev){
+        this.focus(ev.findElement('li'), true, true);
+      }.bind(this)).observe('blur', this.blur.bind(this, true));
       li.insert(a).store('value', val);
       return li;
     },
@@ -508,19 +506,21 @@
       return li;
     },
     
-    callEvent: function(el, type){
-//      if (el.match('input')) {
-//        el.setStyle({
-//          opacity: 1
-//        });
-//      }
-//      else {
-//        this.mainInput.setStyle({
-//          opacity: 0
-//        });
-//      }
-      if (type == 'focus') {
-        this.mainInput.focus();
+    callEvent: function(el, type, onFocus){
+      if (!onFocus) {
+        //      if (el.match('input')) {
+        //        el.setStyle({
+        //          opacity: 1
+        //        });
+        //      }
+        //      else {
+        //        this.mainInput.setStyle({
+        //          opacity: 0
+        //        });
+        //      }
+        if (type == 'focus') {
+          this.mainInput.focus();
+        }
       }
     },
     
@@ -555,9 +555,11 @@
       else if (this.checkInput() && this.bits.keys().length && this.current.previous()) {
         this.focus(this.current.previous());
       }
+      this.autoPosition(true);
     },
     autoShow: function(search){
       this.autoPosition();
+      this.autoholder.show();
       this.autoholder.descendants().each(function(ev){
         ev.hide();
       });
@@ -664,8 +666,8 @@
       this.mainInput.clear().focus();
       return this;
     },
-    autoPosition: function(){
-      if (!this.autoholder.visible()) {
+    autoPosition: function(force){
+      if (force || !this.autoholder.visible()) {
         var contOffset = this.holder.viewportOffset();
         var parentOffset = this.options.autoComplete.parent.viewportOffset();
         contOffset.top = contOffset.top - parentOffset.top;
@@ -675,7 +677,6 @@
           top: (contOffset.top + this.container.getHeight()) + 'px',
           width: this.holder.getWidth() + 'px'
         });
-        this.autoholder.show();
       }
 // dynamically set max depending on avail space?
 // would also scroll parent as needed?      
