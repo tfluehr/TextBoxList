@@ -1,4 +1,15 @@
 /* TextboxList sample CSS */
+body
+{
+    margin: 0px;
+    padding: 15px;
+}
+
+.TextboxList, .TextboxListAutoComplete
+{
+    font-size: 90%;
+}
+
 .TextboxList ul.holder
 {
     margin: 0;
@@ -7,22 +18,27 @@
     height: auto !important;
     height: 1%;
     padding: 0;
+    font: 11px "Lucida Grande", "Verdana";
+    width: 500px;
+    position: relative;
 }
+
 .TextboxList ul.holder li
 {
     float: left;
     list-style-type: none;
-    margin: 2px 3px 2px 3px;
+    margin: 0px;
 }
 
 .TextboxList ul.holder li.bit-box
 {
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    border-radius: 6px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
     border: 1px solid #CAD8F3;
     background: #DEE7F8;
-    padding: 1px 5px 2px;
+    padding: 1px 5px 0px;
+    margin: 2px 4px;
 }
 
 .TextboxList ul.holder li.bit-box-focus
@@ -35,15 +51,15 @@
 .TextboxList ul.holder li.bit-input input
 {
     width: 150px;
-    border: none;
+    border: 1px none transparent; /* IE7 is royally f'ed up in that boder: none is not good enough.  we also need to give it a border-width and a border-color */
     outline: 0;
     padding: 0px;
-    margin: 4px 3px 4px 3px;
+    margin: 0px 0px 0px 4px;
 }
- /* no left/right padding here please */
-.TextboxList ul.holder li.bit-input input.smallinput
+
+.TextboxList ul.holder li.bit-box + input.maininput
 {
-    width: 20px;
+    margin: 5px 0px 0px 0px;
 }
 
 .TextboxList ul.holder li.bit-box:hover
@@ -63,12 +79,12 @@
 {
     position: absolute;
     right: 4px;
-    top: 5px;
+    top: 6px;
     display: block;
     width: 7px;
     height: 7px;
     font-size: 1px;
-    background: url('../lib/close.gif');
+    background: url('/VocusXRA50/Images/close.gif');
 }
 
 .TextboxList ul.holder li.bit-box a.closebutton:hover
@@ -76,12 +92,12 @@
     background-position: 7px;
 }
 
-.TextboxList ul.holder li.bit-box-focus a.closebutton, ul.holder li.bit-box-focus a.closebutton:hover
+.TextboxList ul.holder li.bit-box-focus a.closebutton, .TextboxList ul.holder li.bit-box-focus a.closebutton:hover
 {
     background-position: bottom;
 }
 
-.TextboxList ul.holder li.bit-box, #apple-list ul.holder li.bit-box
+.TextboxList ul.holder li.bit-box
 {
     padding-right: 15px;
     position: relative;
@@ -91,7 +107,6 @@
 .TextboxListAutoComplete
 {
     position: absolute;
-    width: 512px;
     background: #eee;
 }
 
@@ -118,7 +133,6 @@
     list-style-type: none;
     border: 1px solid #ccc;
     border-width: 0 1px 1px;
-    font: 11px "Lucida Grande", "Verdana";
 }
 
 .TextboxListAutoComplete ul li em
@@ -139,84 +153,3 @@
     background: none;
 }
 
-/* Facebook demo CSS */
-form,
-#add
-{
-    border: 1px solid #999;
-    width: 550px;
-    margin: 50px;
-    padding: 20px 30px 10px;
-}
-
-form ol
-{
-    font: 11px "Lucida Grande", "Verdana";
-    margin: 0;
-    padding: 0;
-}
-
-form ol li.input-text
-{
-    margin-bottom: 10px;
-    list-style-type: none;
-    border-bottom: 1px dotted #999;
-    padding-bottom: 10px;
-}
-
-form ol li.input-text label
-{
-    font-weight: bold;
-    cursor: pointer;
-    display: block;
-    font-size: 13px;
-    margin-bottom: 10px;
-}
-
-form ol li.input-text input
-{
-    width: 500px;
-    padding: 5px 5px 6px;
-    font: 11px "Lucida Grande", "Verdana";
-    border: 1px solid #999;
-}
-
-form ul.holder
-{
-    width: 500px;
-}
-
-
-#apple-list ul.holder li.bit-input
-{
-    margin: 0;
-}
-
-#apple-list ul.holder li.bit-input input.smallinput
-{
-    width: 5px;
-}
-
-
-
-#demo ul.holder li.bit-input input
-{
-    padding: 2px 0 1px;
-    border: 1px solid #999;
-}
-#add a
-{
-    color: #666;
-}
-
-#add-test
-{
-    width: 100px;
-    padding: 2px;
-}
-
-#button_container
-{
-    margin-left: 70px;
-    margin-bottom: 30px;
-}

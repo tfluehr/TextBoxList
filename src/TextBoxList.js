@@ -549,11 +549,9 @@
       else if (this.checkInput() && this.bits.keys().length && this.current.previous()) {
         this.focus(this.current.previous());
       }
-      this.autoPosition();
     },
     autoShow: function(search){
       this.autoPosition();
-      this.autoholder.show();
       this.autoholder.descendants().each(function(ev){
         ev.hide();
       });
@@ -661,15 +659,18 @@
       return this;
     },
     autoPosition: function(){
-      var contOffset = this.holder.viewportOffset();
-      var parentOffset = this.options.autoComplete.parent.viewportOffset();
-      contOffset.top = contOffset.top - parentOffset.top;
-      contOffset.left = contOffset.left - parentOffset.left;
-      this.autoholder.setStyle({
-        left: contOffset.left+'px',
-        top: (contOffset.top+this.container.getHeight())+'px',
-        width: this.holder.getWidth()+'px'
-      });
+      if (!this.autoholder.visible()) {
+        var contOffset = this.holder.viewportOffset();
+        var parentOffset = this.options.autoComplete.parent.viewportOffset();
+        contOffset.top = contOffset.top - parentOffset.top;
+        contOffset.left = contOffset.left - parentOffset.left;
+        this.autoholder.setStyle({
+          left: contOffset.left + 'px',
+          top: (contOffset.top + this.container.getHeight()) + 'px',
+          width: this.holder.getWidth() + 'px'
+        });
+        this.autoholder.show();
+      }
 // dynamically set max depending on avail space?
 // would also scroll parent as needed?      
 //      this.options.autoComplete.maxresults = parseInt(($(this.options.autoComplete.parent).getHeight()/this.container.getHeight())/2,10);
