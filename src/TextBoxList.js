@@ -127,6 +127,8 @@
           regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}',
           selectKey1:Event.KEY_RETURN,
           selectKey2:Event.KEY_TAB,
+          customTagKey: null, // set to a keyCode to allow adding a selected item with the currently selected text
+          customTagKeyPrintable: true, // set to false if the above keycode is not printable (because the above causes the last character to be removed from the text when it is detected).
           // 16 is SHIFT
           avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC, 16]
         },
@@ -210,6 +212,21 @@
               this.lastRequestValue = null;
               this.mainInput.clear();
             }
+          }
+          break;
+        case this.options.autoComplete.customTagKey: 
+          if (this.options.autoComplete.customTagKeyPrintable) {
+            this.mainInput.value = this.mainInput.value.truncate(this.mainInput.value.length - 1, '');
+          }
+
+          if (!this.mainInput.value.empty()) {
+            this.addItem({
+              caption: this.mainInput.value,
+              value: this.mainInput.value
+            });
+            this.autoHide();
+            this.lastRequestValue = null;
+            this.mainInput.clear().focus();
           }
           break;
         default:
