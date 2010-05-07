@@ -125,12 +125,11 @@
           parent: document.body,
           startsWith: false,
           regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}',
-          selectKey1:Event.KEY_RETURN,
-          selectKey2:Event.KEY_TAB,
+          selectKeys: options.selectKeys ? options.selectKeys : [Event.KEY_RETURN, Event.KEY_TAB],
           customTagKey: null, // set to a keyCode to allow adding a selected item with the currently selected text
           customTagKeyPrintable: true, // set to false if the above keycode is not printable (because the above causes the last character to be removed from the text when it is detected).
           // 16 is SHIFT
-          avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC, 16]
+          avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC, 16, Event.KEY_TAB]
         },
         className: 'bit',
         results: 10,
@@ -161,77 +160,80 @@
         this.current = this.mainInput;
       }
       this.dosearch = false;
-      switch (ev.keyCode) {
-        case Event.KEY_LEFT:
-          if (!this.resultsshown) { // auto complete not visible - highlite selected item to left if it exists
-            return this.move('left');
-          }
-          break;
-        case Event.KEY_RIGHT:
-          if (!this.resultsshown) {
-            return this.move('right');// auto complete not visible - highlite selected item to right (or input box) if it exists
-          }
-          break;
-        case Event.KEY_DELETE:
-        case Event.KEY_BACKSPACE:
-          if (!this.resultsshown) {
-            return this.moveDispose();// auto complete not visible - delete highlited item if exists
-          }
-          else if (this.mainInput.value.empty()) {
-            this.lastRequestValue = null;
-            this.autoHide();// auto complete visible and input empty so hide auto complete
-          }
-          else {
-            this.dosearch = true; // activate auto complete lookup
-          }
-          break;
-        case Event.KEY_UP:
-          if (this.resultsshown) {
-            ev.stop();
-            return this.autoMove('up');// auto complete visible move highlite up.
-          }
-          break;
-        case Event.KEY_DOWN:
-          if (this.resultsshown) {
-            ev.stop();
-            return this.autoMove('down');// auto complete visible move highlite down.
-          }
-          break;
-        case this.options.autoComplete.selectKey1:
-        case this.options.autoComplete.selectKey2:
-          if (this.resultsshown) {
-            ev.stop();// auto complete visible select highlited item
-            this.autoAdd(this.autocurrent);
-            this.autocurrent = false;
-          }
-          break;
-        case Event.KEY_ESC:
-          if (this.resultsshown) {
-            this.autoHide();// auto complete visible - hide it and clear the input.
-            if (this.current) {
-              this.lastRequestValue = null;
-              this.mainInput.clear();
+      if (this.options.autoComplete.selectKeys.find(function(item){
+        return item === ev.keyCode;
+      })) {
+        if (this.resultsshown) {
+          ev.stop();// auto complete visible select highlited item
+          this.autoAdd(this.autocurrent);
+          this.autocurrent = false;
+        }
+      }
+      else {
+        switch (ev.keyCode) {
+          case Event.KEY_LEFT:
+            if (!this.resultsshown) { // auto complete not visible - highlite selected item to left if it exists
+              return this.move('left');
             }
-          }
-          break;
-        case this.options.autoComplete.customTagKey: 
-          if (this.options.autoComplete.customTagKeyPrintable) {
-            this.mainInput.value = this.mainInput.value.truncate(this.mainInput.value.length - 1, '');
-          }
-
-          if (!this.mainInput.value.empty()) {
-            this.addItem({
-              caption: this.mainInput.value,
-              value: this.mainInput.value
-            });
-            this.autoHide();
-            this.lastRequestValue = null;
-            this.mainInput.clear().focus();
-          }
-          break;
-        default:
-          this.dosearch = true;// default activate auto complete search
-          break;
+            break;
+          case Event.KEY_RIGHT:
+            if (!this.resultsshown) {
+              return this.move('right');// auto complete not visible - highlite selected item to right (or input box) if it exists
+            }
+            break;
+          case Event.KEY_DELETE:
+          case Event.KEY_BACKSPACE:
+            if (!this.resultsshown) {
+              return this.moveDispose();// auto complete not visible - delete highlited item if exists
+            }
+            else if (this.mainInput.value.empty()) {
+              this.lastRequestValue = null;
+              this.autoHide();// auto complete visible and input empty so hide auto complete
+            }
+            else {
+              this.dosearch = true; // activate auto complete lookup
+            }
+            break;
+          case Event.KEY_UP:
+            if (this.resultsshown) {
+              ev.stop();
+              return this.autoMove('up');// auto complete visible move highlite up.
+            }
+            break;
+          case Event.KEY_DOWN:
+            if (this.resultsshown) {
+              ev.stop();
+              return this.autoMove('down');// auto complete visible move highlite down.
+            }
+            break;
+          case Event.KEY_ESC:
+            if (this.resultsshown) {
+              this.autoHide();// auto complete visible - hide it and clear the input.
+              if (this.current) {
+                this.lastRequestValue = null;
+                this.mainInput.clear();
+              }
+            }
+            break;
+          case this.options.autoComplete.customTagKey:
+            if (this.options.autoComplete.customTagKeyPrintable) {
+              this.mainInput.value = this.mainInput.value.substr(0, this.mainInput.value.length - 1);
+            }
+            
+            if (!this.mainInput.value.empty()) {
+              this.addItem({
+                caption: this.mainInput.value,
+                value: this.mainInput.value
+              });
+              this.autoHide();
+              this.lastRequestValue = null;
+              this.mainInput.clear().focus();
+            }
+            break;
+          default:
+            this.dosearch = true;// default activate auto complete search
+            break;
+        }
       }
       if (this.dosearch) {
         if (this.mainInput.value.empty() &&
@@ -308,7 +310,10 @@
     },
     setupMainInputEvents: function(){
       this.mainInput.observe('keydown', (function(ev){
-        if (this.resultsshown && (this.options.autoComplete.selectKey1 == ev.keyCode || this.options.autoComplete.selectKey2 == ev.keyCode)) {
+        if (this.resultsshown &&
+        this.options.autoComplete.selectKeys.find(function(item){
+          return item === ev.keyCode;
+        })) {
           ev.stop(); // auto complete visible so stop on Return to prevent form submit
         }
       }).bind(this));
