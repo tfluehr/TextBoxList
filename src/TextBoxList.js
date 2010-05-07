@@ -290,7 +290,7 @@
       }).bind(this));
     },
     setupMainInputEvents: function(){
-      this.mainInput.observe(Prototype.Browser.IE ? 'keydown' : 'keypress', (function(ev){
+      this.mainInput.observe('keydown', (function(ev){
         if (this.resultsshown && (this.options.autoComplete.selectKey1 == ev.keyCode || this.options.autoComplete.selectKey2 == ev.keyCode)) {
           ev.stop(); // auto complete visible so stop on Return to prevent form submit
         }
