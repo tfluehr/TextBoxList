@@ -115,25 +115,30 @@
         autoComplete: {
           url: null,
           opacity: 0.8, // opacity of drop down
-          limitResults: false,
-          maxresults: 10, // max results to display in drop down
+          maxresults: Infinity, // max results to display in drop down
           minchars: 1, // min characters to show dropdown
           noResultsMessage: 'No values found',
           message: '&nbsp;', // message to be displayed 
           showMessage: false, // whether to show the message on focus
           requestDelay: 0.3, // delay (in seconds) after last keypress before sending request.
-          parent: document.body,
-          startsWith: false,
-          regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}',
-          selectKeys: options.selectKeys ? options.selectKeys : [Event.KEY_RETURN, Event.KEY_TAB],
+          parent: document.body, // parent element for autocomplete dropdown.
+          startsWith: false, // limit match to starts with
+          regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}', // regular expression to use for matching/highlighting items.
+          selectKeys: options.selectKeys ? options.selectKeys : [Event.KEY_RETURN, Event.KEY_TAB], // array of keys to use for selecting an item.
           customTagKey: null, // set to a keyCode to allow adding a selected item with the currently selected text
           customTagKeyPrintable: true, // set to false if the above keycode is not printable (because the above causes the last character to be removed from the text when it is detected).
           // 16 is SHIFT
-          avoidKeys: [Event.KEY_UP, Event.KEY_DOWN, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_RETURN, Event.KEY_ESC, 16, Event.KEY_TAB]
+          avoidKeys: [Event.KEY_UP, // keycodes to ignore when searching.
+                      Event.KEY_DOWN, 
+                      Event.KEY_LEFT, 
+                      Event.KEY_RIGHT, 
+                      Event.KEY_RETURN, 
+                      Event.KEY_ESC, 
+                      16, 
+                      Event.KEY_TAB]
         },
-        className: 'bit',
-        results: 10,
-        uniqueValues: true
+        className: 'bit', // common className to pre-pend to created elements. 
+        uniqueValues: true // enforce uniqueness in selected items.
       }, options);
       
       this.input = $(element).hide();
@@ -235,7 +240,16 @@
             break;
         }
       }
-      if (this.dosearch) {
+      if (this.checkSearch(this.mainInput.value)) {
+        this.autoholder.descendants().each(function(ev){
+          ev.hide();
+        });
+        if (this.options.autoComplete.showMessage) {
+          this.autoMessage.show();
+        }
+        this.resultsshown = false;
+      }
+      else if (this.dosearch) {
         if (this.mainInput.value.empty() &&
         this.options.autoComplete.avoidKeys.find(function(item){
           return item === ev.keyCode;
@@ -530,16 +544,6 @@
     
     callEvent: function(el, type, onFocus){
       if (!onFocus) {
-        //      if (el.match('input')) {
-        //        el.setStyle({
-        //          opacity: 1
-        //        });
-        //      }
-        //      else {
-        //        this.mainInput.setStyle({
-        //          opacity: 0
-        //        });
-        //      }
         if (type == 'focus') {
           this.mainInput.focus();
         }
@@ -579,13 +583,16 @@
       }
       this.autoPosition(true);
     },
+    checkSearch: function(search){
+      return !search || !search.strip() || (!search.length || search.length < this.options.autoComplete.minchars);
+    },
     autoShow: function(search){
       this.autoPosition();
       this.autoholder.show();
       this.autoholder.descendants().each(function(ev){
         ev.hide();
       });
-      if (!search || !search.strip() || (!search.length || search.length < this.options.autoComplete.minchars)) {
+      if (this.checkSearch(search)) {
         if (this.options.autoComplete.showMessage) {
           this.autoMessage.show();
         }
@@ -606,7 +613,7 @@
           return returnVal;
         }, this).each(function(result, ti){
           count++;
-          if (this.options.autoComplete.limitResults && ti >= this.options.autoComplete.maxresults) {
+          if (ti >= this.options.autoComplete.maxresults) {
             return;
           }
           var el = new Element('li', {
@@ -624,16 +631,6 @@
         }
         
       }
-//      if (count > this.options.results) {
-//        this.autoresults.setStyle({
-//          'height': (this.options.results * 24) + 'px'
-//        });
-//      }
-//      else {
-//        this.autoresults.setStyle({
-//          'height': (count ? (count * 24) : 0) + 'px'
-//        });
-//      }
       return this;
     },
     
@@ -700,11 +697,6 @@
           width: this.holder.getWidth() + 'px'
         });
       }
-// dynamically set max depending on avail space?
-// would also scroll parent as needed?      
-//      this.options.autoComplete.maxresults = parseInt(($(this.options.autoComplete.parent).getHeight()/this.container.getHeight())/2,10);
-//      top.console.log(this.options.autoComplete.maxresults);
-      
     }
   });
   
