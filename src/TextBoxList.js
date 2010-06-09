@@ -83,14 +83,46 @@
       }).bind(this));
     }
   });
-  var TextboxLists = $H(); // for caching instances so we only need to add one set of observers for keyup and click
+  var TextboxLists = $H(); // for caching instances so we only need to add one set of observers for keypress and click
   document.observe('dom:loaded', function(ev){
-    document.observe('keyup', (function(ev){
+    var nonChar = false;
+    // from http://santrajan.blogspot.com/2007/03/cross-browser-keyboard-handler.html
+    var handleKeys = function(ev){
+      var ch;
       var list = ev.findElement('.TextboxList');
-      if (list) {
-        TextboxLists.get(list.identify()).keyup(ev);
+      if (ev.type == "keydown") {
+        ch = ev.keyCode;
+        if (ch < 16 || // non printables
+        (ch > 16 && ch < 32) || // avoid shift
+        (ch > 32 && ch < 41) || // navigation keys
+        ch == 46) // Delete Key
+        {
+          if (list) {
+            TextboxLists.get(list.identify()).handleNonChar(ev);
+          }
+          nonChar = true;
+        }
+        else {
+          nonChar = false;
+        }
       }
-    }).bind(this));
+      else { // This is keypress
+        if (nonChar) {
+          nonChar = false;
+          //ev.stop();
+          return false; // Already Handled on keydown
+        }
+        ch = ev.charCode || ev.keyCode;
+        if (ch > 31 && ch < 256 // printable character
+            && (typeof(ev.charCode) !== 'undefined' ? ev.charCode : -1) !== 0) {// no function key (Firefox)
+          if (list) {
+            TextboxLists.get(list.identify()).handleChar(ev, ch);
+          }
+        }
+      }
+    };
+    document.observe('keypress', handleKeys);
+    document.observe('keydown', handleKeys);
     document.observe('click', function(ev){
       if (!ev.isRightClick() && !ev.isMiddleClick()) {
         var el = ev.findElement('.TextboxList, .TextboxListAutoComplete');
@@ -124,18 +156,17 @@
           parent: document.body, // parent element for autocomplete dropdown.
           startsWith: false, // limit match to starts with
           regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}', // regular expression to use for matching/highlighting items.
-          selectKeys: options.selectKeys ? options.selectKeys : [Event.KEY_RETURN, Event.KEY_TAB], // array of keys to use for selecting an item.
-          customTagKey: null, // set to a keyCode to allow adding a selected item with the currently selected text
-          customTagKeyPrintable: true, // set to false if the above keycode is not printable (because the above causes the last character to be removed from the text when it is detected).
-          // 16 is SHIFT
-          avoidKeys: [Event.KEY_UP, // keycodes to ignore when searching.
-                      Event.KEY_DOWN, 
-                      Event.KEY_LEFT, 
-                      Event.KEY_RIGHT, 
-                      Event.KEY_RETURN, 
-                      Event.KEY_ESC, 
-                      16, 
-                      Event.KEY_TAB]
+          selectKeys: options.selectKeys ? options.selectKeys : [{
+                keyCode: Event.KEY_RETURN
+              },
+              {
+                keyCode: Event.KEY_TAB
+              }], // array of keys to use for selecting an item.
+          customTagKeys: options.customTagKeys ? options.customTagKeys : []//, // set to a key(s) to allow adding a selected item with the currently selected text
+        },
+        callbacks: {
+          onMainFocus: null,
+          onMainBlur: null
         },
         className: 'bit', // common className to pre-pend to created elements. 
         uniqueValues: true // enforce uniqueness in selected items.
@@ -160,14 +191,24 @@
       this.setupMainInputEvents();
       this.setupAutoCompleteEvents();
     },
-    keyup: function(ev){
-      if (!this.current) {
-        this.current = this.mainInput;
+    handleNonChar: function(ev){
+      if (this.options.autoComplete.customTagKeys.find(function(item){
+            return item.keyCode === ev.keyCode && !item.printable;
+          })) {
+        // customSelectorActive && non printable && key matches 
+        if (!this.mainInput.value.empty()) { // value is non-empty
+          this.addItem({ //add it
+            caption: this.mainInput.value,
+            value: this.mainInput.value
+          });
+          this.autoHide(); // hide autocomplete
+          this.lastRequestValue = null;
+          this.mainInput.clear().focus();
+        }
       }
-      this.dosearch = false;
-      if (this.options.autoComplete.selectKeys.find(function(item){
-        return item === ev.keyCode;
-      })) {
+      else if (this.options.autoComplete.selectKeys.find(function(item){
+            return item.keyCode === ev.keyCode && !item.printable;
+          })) {
         if (this.resultsshown) {
           ev.stop();// auto complete visible select highlited item
           this.autoAdd(this.autocurrent);
@@ -220,25 +261,15 @@
               }
             }
             break;
-          case this.options.autoComplete.customTagKey:
-            if (this.options.autoComplete.customTagKeyPrintable) {
-              this.mainInput.value = this.mainInput.value.substr(0, this.mainInput.value.length - 1);
-            }
-            
-            if (!this.mainInput.value.empty()) {
-              this.addItem({
-                caption: this.mainInput.value,
-                value: this.mainInput.value
-              });
-              this.autoHide();
-              this.lastRequestValue = null;
-              this.mainInput.clear().focus();
-            }
-            break;
-          default:
-            this.dosearch = true;// default activate auto complete search
-            break;
         }
+      }
+    },
+    handleChar: function(ev, ch){
+      var key;
+      if ((key = this.options.autoComplete.customTagKeys.find(function(item){
+            return item.character === ch && item.printable;
+          }))){
+        this.mainInput.value = this.mainInput.value.replace(new RegExp(key.character+'$'), ''); // remove the character from the end of the input string.
       }
       if (this.checkSearch(this.mainInput.value)) {
         this.autoholder.descendants().each(function(ev){
@@ -249,13 +280,7 @@
         }
         this.resultsshown = false;
       }
-      else if (this.dosearch) {
-        if (this.mainInput.value.empty() &&
-        this.options.autoComplete.avoidKeys.find(function(item){
-          return item === ev.keyCode;
-        })) {
-          return;// if input is empty and keyCode is in ignore list the abort search
-        }
+      else {
         this.focus(this.mainInput);// make sure input has focus
         if (this.options.autoComplete.url !== null)// ajax auto complete
         {
@@ -271,9 +296,6 @@
                   method: 'get',
                   onSuccess: (function(transport){
                     this.data = transport.responseText.evalJSON(true);
-                    //                    transport.responseText.evalJSON(true).each((function(t){
-                    //                      this.autoFeed(t);
-                    //                    }).bind(this));
                     this.autoShow(this.mainInput.value);
                   }).bind(this)
                 });
@@ -331,8 +353,8 @@
           ev.stop(); // auto complete visible so stop on Return to prevent form submit
         }
       }).bind(this));
-      this.mainInput.observe('blur', this.blur.bind(this, false));
-      this.mainInput.observe('focus', this.focus.bindAsEventListener(this, false, true));
+      this.mainInput.observe('blur', this.mainBlur.bindAsEventListener(this, false));
+      this.mainInput.observe('focus', this.mainFocus.bindAsEventListener(this));
       this.mainInput.observe('keydown', function(ev){
         this.store('lastvalue', this.value).store('lastcaret', this.getCaretPosition());
       });
@@ -469,10 +491,13 @@
         }
       }
     },
-    focus: function(el, nofocus, onFocus){
-      if (typeof(el.element) == 'function') {
-        el = el.element();
+    mainFocus: function(ev){
+      this.focus(ev.element(), false, true);
+      if (this.options.callbacks.onMainFocus){
+        this.options.callbacks.onMainFocus(ev);
       }
+    },
+    focus: function(el, nofocus, onFocus){
       if (el != this.container) {
         if (this.current == el) {
           return this;
@@ -492,7 +517,12 @@
         this.callEvent(this.mainInput, 'focus', onFocus);
       }
     },
-    
+    mainBlur: function(ev){
+      this.blur(false);
+      if (this.options.callbacks.onMainBlur){
+        this.options.callbacks.onMainBlur(ev);
+      }
+    },
     blur: function(noblur, onFocus){
       if (!this.current) {
         return this;
