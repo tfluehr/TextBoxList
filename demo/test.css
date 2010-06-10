@@ -37,7 +37,7 @@ body
     border-radius: 5px;
     border: 1px solid #CAD8F3;
     background: #DEE7F8;
-    padding: 1px 5px 0px;
+    padding: 2px 5px 2px;
     margin: 2px 4px;
 }
 
@@ -54,13 +54,16 @@ body
     border: 1px none transparent; /* IE7 is royally f'ed up in that boder: none is not good enough.  we also need to give it a border-width and a border-color */
     outline: 0;
     padding: 0px;
-    margin: 0px 0px 0px 4px;
+    margin: 3px 0px 2px 4px;
+    float: left;
 }
 
+/*
 .TextboxList ul.holder li.bit-box + input.maininput
 {
     margin: 5px 0px 0px 0px;
 }
+*/
 
 .TextboxList ul.holder li.bit-box:hover
 {

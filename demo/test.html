@@ -19,7 +19,7 @@
                     <label>
                         FacebookList input
                     </label>
-                    <input value="[{'caption':'Jorge Luis Borges', 'value': '1'},{'caption':'Julio Cortazar', 'value': '2'},{'caption':'Julio Cortazar', 'value': '2'},{'caption':'Julio Cortazar', 'value': '2'},{'caption':'Julio Cortazar', 'value': '2'}]" type="text" id="facebook-demo" /><!-- These two writers will be added when the control is loaded -->
+                    <input type="text" id="facebook-demo" /><!-- These two writers will be added when the control is loaded -->
                 </li>
             </ol><input type="submit" value="Submit Form" id="submitBtn">
         </form>
@@ -33,8 +33,11 @@
                   opacity: 0.9,
                   showMessage: true,
                   message: 'Type the name of an argentine writer you like',
-                  url: 'fetched.txt'//,
-                  //customTagKey: 188
+                  url: 'fetched.txt',
+                  customTagKeys: [{
+                    printable: true,
+                    character: ','
+                  }]
 //                  selectKeys: [188]
                 }
               });

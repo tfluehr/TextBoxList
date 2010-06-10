@@ -209,7 +209,7 @@
       else if (this.options.autoComplete.selectKeys.find(function(item){
             return item.keyCode === ev.keyCode && !item.printable;
           })) {
-        if (this.resultsshown) {
+        if (this.autoresults.visible()) {
           ev.stop();// auto complete visible select highlited item
           this.autoAdd(this.autocurrent);
           this.autocurrent = false;
@@ -218,42 +218,42 @@
       else {
         switch (ev.keyCode) {
           case Event.KEY_LEFT:
-            if (!this.resultsshown) { // auto complete not visible - highlite selected item to left if it exists
+            if (!this.autoresults.visible()) { // auto complete not visible - highlite selected item to left if it exists
               return this.move('left');
             }
             break;
           case Event.KEY_RIGHT:
-            if (!this.resultsshown) {
+            if (!this.autoresults.visible()) {
               return this.move('right');// auto complete not visible - highlite selected item to right (or input box) if it exists
             }
             break;
           case Event.KEY_DELETE:
           case Event.KEY_BACKSPACE:
-            if (!this.resultsshown) {
+            if (!this.autoresults.visible() && this.mainInput.value.length <= 1) {
               return this.moveDispose();// auto complete not visible - delete highlited item if exists
             }
-            else if (this.mainInput.value.empty()) {
+            else if (this.mainInput.value.length <= 1) {
               this.lastRequestValue = null;
               this.autoHide();// auto complete visible and input empty so hide auto complete
             }
             else {
-              this.dosearch = true; // activate auto complete lookup
+              this.handleChar(ev); // remove char so go through search
             }
             break;
           case Event.KEY_UP:
-            if (this.resultsshown) {
+            if (this.autoresults.visible()) {
               ev.stop();
               return this.autoMove('up');// auto complete visible move highlite up.
             }
             break;
           case Event.KEY_DOWN:
-            if (this.resultsshown) {
+            if (this.autoresults.visible()) {
               ev.stop();
               return this.autoMove('down');// auto complete visible move highlite down.
             }
             break;
           case Event.KEY_ESC:
-            if (this.resultsshown) {
+            if (this.autoresults.visible()) {
               this.autoHide();// auto complete visible - hide it and clear the input.
               if (this.current) {
                 this.lastRequestValue = null;
@@ -265,20 +265,41 @@
       }
     },
     handleChar: function(ev, ch){
+      var forceSearch = false;
+      if (ch) {
+        ch = String.fromCharCode(ch);
+      }
+      else {
+        // from backspace/delete
+        forceSearch = true;
+        ch = '';
+      }
       var key;
       if ((key = this.options.autoComplete.customTagKeys.find(function(item){
             return item.character === ch && item.printable;
           }))){
-        this.mainInput.value = this.mainInput.value.replace(new RegExp(key.character+'$'), ''); // remove the character from the end of the input string.
+        ev.stop(); // stop key from being added to value
+        if (!this.mainInput.value.empty()) { // value is non-empty
+          this.addItem({ //add it
+            caption: this.mainInput.value,
+            value: this.mainInput.value
+          });
+          this.autoHide(); // hide autocomplete
+          this.lastRequestValue = null;
+          this.mainInput.clear().focus();
+          return;
+        }
+        //this.mainInput.value = this.mainInput.value.replace(new RegExp(key.character+'$'), ''); // remove the character from the end of the input string.
       }
-      if (this.checkSearch(this.mainInput.value)) {
+      var sVal = this.mainInput.value+ch;
+      if (this.checkSearch(sVal)) {
         this.autoholder.descendants().each(function(ev){
           ev.hide();
         });
         if (this.options.autoComplete.showMessage) {
           this.autoMessage.show();
         }
-        this.resultsshown = false;
+        this.autoresults.update('').hide();
       }
       else {
         this.focus(this.mainInput);// make sure input has focus
@@ -286,9 +307,9 @@
         {
           clearTimeout(this.fetchRequest);
           this.fetchRequest = (function(){
-            if (this.mainInput.value != this.lastRequestValue) { // only send request if value has changed since last request
+            if (this.mainInput.value != this.lastRequestValue || forceSearch) { // only send request if value has changed since last request
               this.lastRequestValue = this.mainInput.value;
-              if (!this.mainInput.value.empty()) {
+              if (!sVal.empty()) {
                 new Ajax.Request(this.options.autoComplete.url, {
                   parameters: {
                     SearchValue: this.mainInput.value
@@ -304,7 +325,7 @@
           }).bind(this).delay(this.options.autoComplete.requestDelay); // delay request by "options.autoComplete.requestDelay" seconds to wait for user to finish typing
         }
         else {
-          this.autoShow(this.mainInput.value); // non ajax so use local data for auto complete
+          this.autoShow.bind(this).defer(sVal); // non ajax so use local data for auto complete
         }
       }
     },
@@ -346,7 +367,7 @@
     },
     setupMainInputEvents: function(){
       this.mainInput.observe('keydown', (function(ev){
-        if (this.resultsshown &&
+        if (this.autoresults.childElements().size() > 0 &&
         this.options.autoComplete.selectKeys.find(function(item){
           return item === ev.keyCode;
         })) {
@@ -614,7 +635,7 @@
       this.autoPosition(true);
     },
     checkSearch: function(search){
-      return !search || !search.strip() || (!search.length || search.length < this.options.autoComplete.minchars);
+      return typeof search != 'string' || search.strip().empty() || search.length < this.options.autoComplete.minchars;
     },
     autoShow: function(search){
       this.autoPosition();
@@ -626,10 +647,9 @@
         if (this.options.autoComplete.showMessage) {
           this.autoMessage.show();
         }
-        this.resultsshown = false;
+        this.autoresults.update('').hide();
       }
       else {
-        this.resultsshown = true;
         this.autoresults.show().update('');
         var count = 0;
         var regExp = new RegExp(this.options.autoComplete.regExp.replace('{0}', search), 'i');
@@ -658,6 +678,7 @@
         }, this);
         if (count === 0) {
           this.autoNoResults.show();
+          this.autoresults.hide();
         }
         
       }
@@ -671,7 +692,7 @@
     },
     
     autoHide: function(){
-      this.resultsshown = false;
+      this.autoresults.update('').hide();
       this.autoholder.hide();
       return this;
     },
@@ -687,7 +708,7 @@
     },
     
     autoMove: function(direction){
-      if (!this.resultsshown) {
+      if (this.autoresults.childElements().size() === 0) {
         return;
       }
       this.autoFocus(this.autocurrent[(direction == 'up' ? 'previous' : 'next')]());
