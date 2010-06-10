@@ -307,7 +307,7 @@
         {
           clearTimeout(this.fetchRequest);
           this.fetchRequest = (function(){
-            if (this.mainInput.value != this.lastRequestValue || forceSearch) { // only send request if value has changed since last request
+            if (!this.mainInput.value.empty() && (this.mainInput.value != this.lastRequestValue || forceSearch)) { // only send request if value has changed since last request
               this.lastRequestValue = this.mainInput.value;
               if (!sVal.empty()) {
                 new Ajax.Request(this.options.autoComplete.url, {
