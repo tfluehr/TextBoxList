@@ -664,7 +664,7 @@
         }, this).each(function(result, ti){
           count++;
           if (ti >= this.options.autoComplete.maxresults) {
-            return;
+            throw $break;
           }
           var el = new Element('li', {
             'class': 'auto-item'
