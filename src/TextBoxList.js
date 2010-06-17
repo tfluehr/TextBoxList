@@ -166,7 +166,11 @@
         },
         callbacks: {
           onMainFocus: null,
-          onMainBlur: null
+          onMainBlur: null,
+          onBeforeAddItem: null,
+          onAfterAddItem: null,
+          onBeforeUpdateValues: null,
+          onAfterUpdateValues: null
         },
         className: 'bit', // common className to pre-pend to created elements. 
         uniqueValues: true // enforce uniqueness in selected items.
@@ -452,11 +456,13 @@
       var el = this.createBox(val, {
         'id': id
       });
+      this.options.callbacks.onBeforeAddItem(val, el);
       this.mainInput.insert({
         'before': el
       });
       this.bits.set(id, val);
       this.updateInputValue();
+      this.options.callbacks.onAfterAddItem(val, el);
       return el;
     },
     /*
@@ -464,7 +470,10 @@
      * Set as a JSON string
      */
     updateInputValue: function(){
-      this.input.setValue(Object.toJSON(this.bits.values()));
+      var values = this.bits.values();
+      this.options.callbacks.onBeforeUpdateValues(values, this.input);
+      this.input.setValue(Object.toJSON(values));
+      this.options.callbacks.onAfterUpdateValues(values, this.input);
     },
     /*
      * Remove a single item from the text list
