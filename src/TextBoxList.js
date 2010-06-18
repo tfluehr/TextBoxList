@@ -143,6 +143,8 @@
   });
   TextboxList = Class.create({
     initialize: function(element, options, data){
+      var callbacks = options.callbacks;
+      options.callbacks = {};
       this.options = Object.deepExtend({
         autoComplete: {
           url: null,
@@ -162,7 +164,8 @@
               {
                 keyCode: Event.KEY_TAB
               }], // array of keys to use for selecting an item.
-          customTagKeys: options.customTagKeys ? options.customTagKeys : []//, // set to a key(s) to allow adding a selected item with the currently selected text
+          customTagKeys: options.customTagKeys ? options.customTagKeys : [],//, // set to a key(s) to allow adding a selected item with the currently selected text
+          loadCustomEvent: null
         },
         callbacks: {
           onMainFocus: Prototype.emptyFunction,
@@ -170,7 +173,8 @@
           onBeforeAddItem: Prototype.emptyFunction,
           onAfterAddItem: Prototype.emptyFunction,
           onBeforeUpdateValues: Prototype.emptyFunction,
-          onAfterUpdateValues: Prototype.emptyFunction
+          onAfterUpdateValues: Prototype.emptyFunction,
+          onControlLoaded: Prototype.emptyFunction
         },
         className: 'bit', // common className to pre-pend to created elements. 
         uniqueValues: true // enforce uniqueness in selected items.
@@ -189,6 +193,8 @@
       var tempItems = (this.input.getValue().empty() ? [] : this.input.getValue().evalJSON());
       // create initial items
       tempItems.each(this.addItem, this);
+      this.options.callbacks = Object.deepExtend(this.options.callbacks, callbacks);
+      this.options.callbacks.onControlLoaded();
     },
     setupEvents: function(){
       this.setupContainerEvents();
