@@ -165,12 +165,12 @@
           customTagKeys: options.customTagKeys ? options.customTagKeys : []//, // set to a key(s) to allow adding a selected item with the currently selected text
         },
         callbacks: {
-          onMainFocus: null,
-          onMainBlur: null,
-          onBeforeAddItem: null,
-          onAfterAddItem: null,
-          onBeforeUpdateValues: null,
-          onAfterUpdateValues: null
+          onMainFocus: Prototype.emptyFunction,
+          onMainBlur: Prototype.emptyFunction,
+          onBeforeAddItem: Prototype.emptyFunction,
+          onAfterAddItem: Prototype.emptyFunction,
+          onBeforeUpdateValues: Prototype.emptyFunction,
+          onAfterUpdateValues: Prototype.emptyFunction
         },
         className: 'bit', // common className to pre-pend to created elements. 
         uniqueValues: true // enforce uniqueness in selected items.
