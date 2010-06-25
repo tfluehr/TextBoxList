@@ -176,6 +176,8 @@
           onAfterUpdateValues: Prototype.emptyFunction,
           onControlLoaded: Prototype.emptyFunction
         },
+        disabledColor: 'silver',
+        disabledOpacity: 0.3,
         className: 'bit', // common className to pre-pend to created elements. 
         uniqueValues: true // enforce uniqueness in selected items.
       }, options);
@@ -193,6 +195,7 @@
       var tempItems = (this.input.getValue().empty() ? [] : this.input.getValue().evalJSON());
       // create initial items
       tempItems.each(this.addItem, this);
+      this.isDisabled();
       this.options.callbacks = Object.deepExtend(this.options.callbacks, callbacks);
       this.options.callbacks.onControlLoaded();
     },
@@ -201,7 +204,61 @@
       this.setupMainInputEvents();
       this.setupAutoCompleteEvents();
     },
+    disable: function(){
+      this.isDisabled(true);
+    },
+    enable: function(){
+      this.isDisabled(false);
+    },
+    isDisabled: function(disable){
+      if (typeof disable == 'boolean'){
+        this.input.disabled = disable;
+      }
+      if (this.input.disabled){
+        if (!this.disabled){
+          // disable control
+          this.disabled = true;
+          this.mainInput.hide();
+          this.holder.select('.closebutton').invoke('hide');
+          this.container.addClassName('Disabled');
+          this.showCover();
+        }
+        return true;
+      }
+      else if (this.disabled){
+        // enable control
+        this.disabled = false;
+        this.mainInput.show();
+        this.holder.select('.closebutton').invoke('show');
+        this.container.removeClassName('Disabled');
+        this.hideCover();
+      }
+      return false;
+    },
+    showCover: function(){
+      if (!this.coverDiv){         
+        this.coverDiv = new Element('div').setStyle({
+          opacity: this.options.disabledOpacity,
+          backgroundColor: this.options.disabledColor,
+          position: 'absolute',
+          top: '0px',
+          left: '0px',
+          height: '100%',
+          width: '100%'
+        });
+        this.container.insert(this.coverDiv);
+      }
+      this.coverDiv.show();
+    },
+    hideCover: function(){
+      if (this.coverDiv) {
+        this.coverDiv.hide();
+      }
+    },
     handleNonChar: function(ev){
+      if (this.isDisabled()){
+        return;
+      }
       if (this.options.autoComplete.customTagKeys.find(function(item){
             return item.keyCode === ev.keyCode && !item.printable;
           })) {
@@ -275,6 +332,9 @@
       }
     },
     handleChar: function(ev, ch){
+      if (this.isDisabled()){
+        return;
+      }
       var forceSearch = false;
       if (ch) {
         ch = String.fromCharCode(ch);
@@ -340,6 +400,9 @@
       }
     },
     click: function(ev){
+      if (this.isDisabled()){
+        return;
+      }
       var el;
       if ((el = ev.findElement('.auto-item'))) { // click on auto complete item
         ev.stop();
@@ -386,9 +449,12 @@
       }).bind(this));
       this.mainInput.observe('blur', this.mainBlur.bindAsEventListener(this, false));
       this.mainInput.observe('focus', this.mainFocus.bindAsEventListener(this));
-      this.mainInput.observe('keydown', function(ev){
-        this.store('lastvalue', this.value).store('lastcaret', this.getCaretPosition());
-      });
+      this.mainInput.observe('keydown', (function(ev){
+        if (this.isDisabled()){
+          return;
+        }
+        ev.element().store('lastvalue', ev.element().value).store('lastcaret', ev.element().getCaretPosition());
+      }).bind(this));
     },
     setupAutoCompleteEvents: function(){
       this.autoresults.observe('mouseover', (function(ev){
@@ -408,6 +474,8 @@
     setupMainElements: function(){
       this.container = new Element('div', { // container to hold all controls
         'class': 'TextboxList'
+      }).setStyle({
+        position: 'relative'
       });
       TextboxLists.set(this.container.identify(), this);
       
@@ -534,6 +602,9 @@
       }
     },
     focus: function(el, nofocus, onFocus){
+      if (this.isDisabled()){
+        return;
+      }
       if (el != this.container) {
         if (this.current == el) {
           return this;
@@ -560,6 +631,9 @@
       }
     },
     blur: function(noblur, onFocus){
+      if (this.isDisabled()){
+        return;
+      }
       if (!this.current) {
         return this;
       }
