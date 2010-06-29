@@ -637,7 +637,7 @@
       if (!this.current) {
         return this;
       }
-      if (this.current == this.mainInput) {
+      if (this.current == this.mainInput || this.current.match('.bit-box')) {
         if (!noblur) {
           this.callEvent(this.mainInput, 'blur', onFocus);
         }
@@ -733,7 +733,7 @@
         ev.hide();
       });
       if (this.checkSearch(search)) {
-        if (this.options.autoComplete.showMessage) {
+        if (this.options.autoComplete.showMessage && !this.blurhide) {
           this.autoMessage.show();
         }
         this.autoresults.update('').hide();
@@ -783,6 +783,7 @@
     autoHide: function(){
       this.autoresults.update('').hide();
       this.autoholder.hide();
+      this.blurhide = null;
       return this;
     },
     
