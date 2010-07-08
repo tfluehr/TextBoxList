@@ -407,6 +407,7 @@
       if ((el = ev.findElement('.auto-item'))) { // click on auto complete item
         ev.stop();
         this.autoAdd(el);
+        this.curOn = false;
       }
       else if ((el = ev.findElement('.closebutton'))) { // x for removing a selected item
         ev.stop();
@@ -781,6 +782,7 @@
     },
     
     autoHide: function(){
+      this.autoMessage.hide();
       this.autoresults.update('').hide();
       this.autoholder.hide();
       this.blurhide = null;
