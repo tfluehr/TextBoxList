@@ -531,14 +531,18 @@
       var el = this.createBox(val, {
         'id': id
       });
-      this.options.callbacks.onBeforeAddItem(val, el);
-      this.mainInput.insert({
-        'before': el
-      });
-      this.bits.set(id, val);
-      this.updateInputValue();
-      this.options.callbacks.onAfterAddItem(val, el);
-      return el;
+      if (!this.options.callbacks.onBeforeAddItem(this.bits.values(), val, el)) {
+        this.mainInput.insert({
+          'before': el
+        });
+        this.bits.set(id, val);
+        this.updateInputValue();
+        this.options.callbacks.onAfterAddItem(this.bits.values(), val, el);
+        return el;
+      }
+      else {
+        return null;
+      }
     },
     /*
      * update the source input box with current values
@@ -821,8 +825,9 @@
       if (!el || !el.retrieve('result')) {
         return;
       }
-      this.addItem(el.retrieve('result'));
-      delete this.data[this.data.indexOf(Object.toJSON(el.retrieve('result')))];
+      if (this.addItem(el.retrieve('result'))) {
+        delete this.data[this.data.indexOf(Object.toJSON(el.retrieve('result')))];
+      }
       this.autoHide();
       this.lastRequestValue = null;
       this.mainInput.clear().focus();
