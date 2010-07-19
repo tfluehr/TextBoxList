@@ -158,6 +158,7 @@
           parent: document.body, // parent element for autocomplete dropdown.
           startsWith: false, // limit match to starts with
           regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}', // regular expression to use for matching/highlighting items.
+          secondaryRegExp: null, // regular expression to use for matching/highlighting items.
           selectKeys: options.selectKeys ? options.selectKeys : [{
                 keyCode: Event.KEY_RETURN
               },
@@ -395,7 +396,7 @@
           }).bind(this).delay(this.options.autoComplete.requestDelay); // delay request by "options.autoComplete.requestDelay" seconds to wait for user to finish typing
         }
         else {
-          this.autoShow.bind(this).defer(sVal); // non ajax so use local data for auto complete
+          this.autoShow.bind(this).defer(); // non ajax so use local data for auto complete
         }
       }
     },
@@ -732,6 +733,9 @@
       return typeof search != 'string' || search.strip().empty() || search.length < this.options.autoComplete.minchars;
     },
     autoShow: function(search){
+      if (typeof search != 'string'){
+        search = this.mainInput.value;
+      }
       this.autoPosition();
       this.autoholder.show();
       this.autoholder.descendants().each(function(ev){
@@ -745,17 +749,47 @@
       }
       else {
         this.autoresults.show().update('');
-        var count = 0;
+        var count = 0, matchCount = 0;
         var regExp = new RegExp(this.options.autoComplete.regExp.replace('{0}', search), 'i');
-        this.data.filter(function(obj){
+        var results = this.data.filter(function(obj){
+          if (matchCount === this.options.autoComplete.maxresults){
+            throw $break;
+          }
           var returnVal = obj ? regExp.test(obj.caption) : false;
           if (returnVal && this.options.uniqueValues) {
             returnVal = !this.bits.find(function(item){
               return item.value.caption === obj.caption;
             });
           }
+          if (returnVal){
+            matchCount++;
+          }
           return returnVal;
-        }, this).each(function(result, ti){
+        }, this);
+        var secondaryRegExp;
+        if (this.options.autoComplete.secondaryRegExp) {
+          secondaryRegExp = new RegExp(this.options.autoComplete.secondaryRegExp.replace('{0}', search), 'i');
+          var secondaryResults = this.data.filter(function(obj){
+            if (matchCount === this.options.autoComplete.maxresults){
+              throw $break;
+            }
+            var returnVal = obj ? secondaryRegExp.test(obj.caption) && !results.find(function(item){
+                return item.caption === obj.caption;
+              }) : false;
+            if (returnVal && this.options.uniqueValues) {
+              returnVal = !this.bits.find(function(item){
+                return item.value.caption === obj.caption;
+              });
+            }
+            if (returnVal){
+              matchCount++;
+            }
+            return returnVal;
+          }, this);
+          results = results.concat(secondaryResults);
+        }
+
+        results.each(function(result, ti){
           count++;
           if (ti >= this.options.autoComplete.maxresults) {
             throw $break;
@@ -763,7 +797,7 @@
           var el = new Element('li', {
             'class': 'auto-item'
           });
-          el.update(this.autoHighlight(result.caption, regExp));
+          el.update(this.autoHighlight(result.caption, regExp, secondaryRegExp));
           this.autoresults.insert(el);
           el.store('result', result);
           if (ti === 0) {
@@ -779,8 +813,10 @@
       return this;
     },
     
-    autoHighlight: function(html, highlight){
+    autoHighlight: function(html, highlight, secondaryHighlight){
       return html.gsub(highlight, function(match){
+        return '<em>' + match[0] + '</em>';
+      }).gsub(secondaryHighlight, function(match){
         return '<em>' + match[0] + '</em>';
       });
     },
