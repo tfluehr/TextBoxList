@@ -732,6 +732,9 @@
     checkSearch: function(search){
       return typeof search != 'string' || search.strip().empty() || search.length < this.options.autoComplete.minchars;
     },
+    encodeSearch: function(search){
+      return search.replace(/([^\\]??[\^\$\.\*\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g, '\\$1');
+    },
     autoShow: function(search){
       if (typeof search != 'string'){
         search = this.mainInput.value;
@@ -750,7 +753,7 @@
       else {
         this.autoresults.show().update('');
         var count = 0, matchCount = 0;
-        var regExp = new RegExp(this.options.autoComplete.regExp.replace('{0}', search), 'i');
+        var regExp = new RegExp(this.options.autoComplete.regExp.replace('{0}', this.encodeSearch(search)), 'i');
         var results = this.data.filter(function(obj){
           if (matchCount === this.options.autoComplete.maxresults){
             throw $break;
@@ -768,7 +771,7 @@
         }, this);
         var secondaryRegExp;
         if (this.options.autoComplete.secondaryRegExp) {
-          secondaryRegExp = new RegExp(this.options.autoComplete.secondaryRegExp.replace('{0}', search), 'i');
+          secondaryRegExp = new RegExp(this.options.autoComplete.secondaryRegExp.replace('{0}', this.encodeSearch(search)), 'i');
           var secondaryResults = this.data.filter(function(obj){
             if (matchCount === this.options.autoComplete.maxresults){
               throw $break;
