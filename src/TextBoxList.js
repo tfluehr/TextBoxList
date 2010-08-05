@@ -733,7 +733,7 @@
       return typeof search != 'string' || search.strip().empty() || search.length < this.options.autoComplete.minchars;
     },
     encodeSearch: function(search){
-      return search.replace(/([^\\]??[\^\$\.\*\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g, '\\$1');
+      return search.replace(/([\^\$\.\*\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g, '\\$1');
     },
     autoShow: function(search){
       if (typeof search != 'string'){
