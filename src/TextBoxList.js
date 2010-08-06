@@ -146,28 +146,25 @@
       var callbacks = options.callbacks;
       options.callbacks = {};
       this.options = Object.deepExtend({
-        autoComplete: {
-          url: null,
-          opacity: 0.8, // opacity of drop down
-          maxresults: Infinity, // max results to display in drop down
-          minchars: 1, // min characters to show dropdown
-          noResultsMessage: 'No values found',
-          message: '&nbsp;', // message to be displayed 
-          showMessage: false, // whether to show the message on focus
-          requestDelay: 0.3, // delay (in seconds) after last keypress before sending request.
-          parent: document.body, // parent element for autocomplete dropdown.
-          startsWith: false, // limit match to starts with
-          regExp: options.autoComplete && options.autoComplete.startsWith ? '^{0}' : '{0}', // regular expression to use for matching/highlighting items.
-          secondaryRegExp: null, // regular expression to use for matching/highlighting items.
-          selectKeys: options.selectKeys ? options.selectKeys : [{
-                keyCode: Event.KEY_RETURN
-              },
-              {
-                keyCode: Event.KEY_TAB
-              }], // array of keys to use for selecting an item.
-          customTagKeys: options.customTagKeys ? options.customTagKeys : [],//, // set to a key(s) to allow adding a selected item with the currently selected text
-          loadCustomEvent: null
-        },
+        url: null,
+        opacity: 0.8, // opacity of drop down
+        maxresults: Infinity, // max results to display in drop down
+        minchars: 1, // min characters to show dropdown
+        noResultsMessage: 'No values found',
+        message: '&nbsp;', // message to be displayed 
+        showMessage: false, // whether to show the message on focus
+        requestDelay: 0.3, // delay (in seconds) after last keypress before sending request.
+        parent: document.body, // parent element for autocomplete dropdown.
+        startsWith: false, // limit match to starts with
+        regExp: options.autoComplete && options.startsWith ? '^{0}' : '{0}', // regular expression to use for matching/highlighting items.
+        secondaryRegExp: null, // regular expression to use for matching/highlighting items.
+        selectKeys: options.selectKeys ? options.selectKeys : [{
+              keyCode: Event.KEY_RETURN
+            },
+            {
+              keyCode: Event.KEY_TAB
+            }], // array of keys to use for selecting an item.
+        customTagKeys: options.customTagKeys ? options.customTagKeys : [],//, // set to a key(s) to allow adding a selected item with the currently selected text
         callbacks: {
           onMainFocus: Prototype.emptyFunction,
           onMainBlur: Prototype.emptyFunction,
@@ -260,7 +257,7 @@
       if (this.isDisabled()){
         return;
       }
-      if (this.options.autoComplete.customTagKeys.find(function(item){
+      if (this.options.customTagKeys.find(function(item){
             return item.keyCode === ev.keyCode && !item.printable;
           })) {
         // customSelectorActive && non printable && key matches 
@@ -274,7 +271,7 @@
           this.mainInput.clear().focus();
         }
       }
-      else if (this.options.autoComplete.selectKeys.find(function(item){
+      else if (this.options.selectKeys.find(function(item){
             return item.keyCode === ev.keyCode && !item.printable;
           })) {
         if (this.autoresults.visible()) {
@@ -346,7 +343,7 @@
         ch = '';
       }
       var key;
-      if ((key = this.options.autoComplete.customTagKeys.find(function(item){
+      if ((key = this.options.customTagKeys.find(function(item){
             return item.character === ch && item.printable;
           }))){
         ev.stop(); // stop key from being added to value
@@ -367,21 +364,21 @@
         this.autoholder.descendants().each(function(ev){
           ev.hide();
         });
-        if (this.options.autoComplete.showMessage) {
+        if (this.options.showMessage) {
           this.autoMessage.show();
         }
         this.autoresults.update('').hide();
       }
       else {
         this.focus(this.mainInput);// make sure input has focus
-        if (this.options.autoComplete.url !== null)// ajax auto complete
+        if (this.options.url !== null)// ajax auto complete
         {
           clearTimeout(this.fetchRequest);
           this.fetchRequest = (function(){
             if (!this.mainInput.value.empty() && (this.mainInput.value != this.lastRequestValue || forceSearch)) { // only send request if value has changed since last request
               this.lastRequestValue = this.mainInput.value;
               if (!sVal.empty()) {
-                new Ajax.Request(this.options.autoComplete.url, {
+                new Ajax.Request(this.options.url, {
                   parameters: {
                     SearchValue: this.mainInput.value
                   },
@@ -393,7 +390,7 @@
                 });
               }
             }
-          }).bind(this).delay(this.options.autoComplete.requestDelay); // delay request by "options.autoComplete.requestDelay" seconds to wait for user to finish typing
+          }).bind(this).delay(this.options.requestDelay); // delay request by "options.requestDelay" seconds to wait for user to finish typing
         }
         else {
           this.autoShow.bind(this).defer(); // non ajax so use local data for auto complete
@@ -443,7 +440,7 @@
     setupMainInputEvents: function(){
       this.mainInput.observe('keydown', (function(ev){
         if (this.autoresults.childElements().size() > 0 &&
-        this.options.autoComplete.selectKeys.find(function(item){
+        this.options.selectKeys.find(function(item){
           return item === ev.keyCode;
         })) {
           ev.stop(); // auto complete visible so stop on Return to prevent form submit
@@ -501,18 +498,18 @@
       }).hide().store('parentTextboxList', this.container.identify());
       this.autoMessage = new Element('div', { // message to display before user types anything
         'class': 'ACMessage'
-      }).update(this.options.autoComplete.message).hide();
+      }).update(this.options.message).hide();
       this.autoNoResults = new Element('div', { // message to display when no autocomplete results
         'class': 'ACMessage'
-      }).update(this.options.autoComplete.noResultsMessage).hide();
+      }).update(this.options.noResultsMessage).hide();
       autoholder.insert(this.autoMessage);
       autoholder.insert(this.autoNoResults);
       this.autoresults = new Element('ul').hide();
       
       autoholder.insert(this.autoresults);
-      $(this.options.autoComplete.parent).insert(autoholder);
+      $(this.options.parent).insert(autoholder);
       
-      this.autoholder = autoholder.setOpacity(this.options.autoComplete.opacity);
+      this.autoholder = autoholder.setOpacity(this.options.opacity);
     },
     getId: function(){
       var id;
@@ -730,7 +727,7 @@
       this.autoPosition(true);
     },
     checkSearch: function(search){
-      return typeof search != 'string' || search.strip().empty() || search.length < this.options.autoComplete.minchars;
+      return typeof search != 'string' || search.strip().empty() || search.length < this.options.minchars;
     },
     encodeSearch: function(search){
       return search.replace(/([\^\$\.\*\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g, '\\$1');
@@ -745,7 +742,7 @@
         ev.hide();
       });
       if (this.checkSearch(search)) {
-        if (this.options.autoComplete.showMessage && !this.blurhide) {
+        if (this.options.showMessage && !this.blurhide) {
           this.autoMessage.show();
         }
         this.autoresults.update('').hide();
@@ -753,9 +750,9 @@
       else {
         this.autoresults.show().update('');
         var count = 0, matchCount = 0;
-        var regExp = new RegExp(this.options.autoComplete.regExp.replace('{0}', this.encodeSearch(search)), 'i');
+        var regExp = new RegExp(this.options.regExp.replace('{0}', this.encodeSearch(search)), 'i');
         var results = this.data.filter(function(obj){
-          if (matchCount === this.options.autoComplete.maxresults){
+          if (matchCount === this.options.maxresults){
             throw $break;
           }
           var returnVal = obj ? regExp.test(obj.caption) : false;
@@ -770,10 +767,10 @@
           return returnVal;
         }, this);
         var secondaryRegExp;
-        if (this.options.autoComplete.secondaryRegExp) {
-          secondaryRegExp = new RegExp(this.options.autoComplete.secondaryRegExp.replace('{0}', this.encodeSearch(search)), 'i');
+        if (this.options.secondaryRegExp) {
+          secondaryRegExp = new RegExp(this.options.secondaryRegExp.replace('{0}', this.encodeSearch(search)), 'i');
           var secondaryResults = this.data.filter(function(obj){
-            if (matchCount === this.options.autoComplete.maxresults){
+            if (matchCount === this.options.maxresults){
               throw $break;
             }
             var returnVal = obj ? secondaryRegExp.test(obj.caption) && !results.find(function(item){
@@ -794,7 +791,7 @@
 
         results.each(function(result, ti){
           count++;
-          if (ti >= this.options.autoComplete.maxresults) {
+          if (ti >= this.options.maxresults) {
             throw $break;
           }
           var el = new Element('li', {
@@ -875,7 +872,7 @@
     autoPosition: function(force){
       if (force || !this.autoholder.visible()) {
         var contOffset = this.holder.viewportOffset();
-        var parentOffset = this.options.autoComplete.parent.viewportOffset();
+        var parentOffset = this.options.parent.viewportOffset();
         contOffset.top = contOffset.top - parentOffset.top;
         contOffset.left = contOffset.left - parentOffset.left;
         this.autoholder.setStyle({
