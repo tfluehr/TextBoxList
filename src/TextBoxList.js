@@ -258,8 +258,16 @@
         return;
       }
       if (this.options.customTagKeys.find(function(item){
-            return item.keyCode === ev.keyCode && !item.printable;
-          })) {
+            var singleMatch = !this.doubleKey && !item.isPair && item.keyCode === ev.keyCode && !item.printable;
+            var doubleMatch = item.isPair && !item.printable && item.keyCode === ev.keyCode; 
+            if (!this.doubleKey && doubleMatch){
+              if (this.mainInput.value.length == 1){
+                this.doubleKey = ev.keyCode;                
+                doubleMatch = false;
+              }
+            }
+            return singleMatch || doubleMatch;
+          }, this)) {
         // customSelectorActive && non printable && key matches 
         if (!this.mainInput.value.empty()) { // value is non-empty
           this.addItem({ //add it
@@ -343,23 +351,53 @@
         ch = '';
       }
       var key;
+      if (this.mainInput.value.length === 0 && this.doubleKey) {
+        this.doubleKey = false;
+        this.doubleEnd = false;
+      }
+      if (this.doubleKey && !this.mainInput.value.startsWith(this.doubleKey)){
+        this.doubleKey = false;
+        this.doubleEnd = false;
+      }
       if ((key = this.options.customTagKeys.find(function(item){
-            return item.character === ch && item.printable;
-          }))){
-        ev.stop(); // stop key from being added to value
-        if (!this.mainInput.value.empty()) { // value is non-empty
-          this.addItem({ //add it
-            caption: this.mainInput.value,
-            value: this.mainInput.value
-          });
-          this.autoHide(); // hide autocomplete
-          this.lastRequestValue = null;
-          this.mainInput.clear().focus();
-          return;
-        }
+            var singleMatch = !this.doubleKey && !item.isPair && item.character === ch && item.printable;
+            var doubleMatch = item.isPair && item.printable && item.character === ch; 
+            if (doubleMatch){
+              if (!this.doubleKey && this.mainInput.getCaretPosition() === 0){
+                this.doubleKey = ch;                
+                doubleMatch = false;
+              }
+              else if (this.doubleKey && this.mainInput.value.startsWith(this.doubleKey)){
+                this.doubleEnd = true;
+              }
+              else{
+                doubleMatch = false;
+              }
+            }
+            return singleMatch || doubleMatch;
+          }, this))){
+            if (!this.doubleKey || this.doubleEnd) {
+              ev.stop(); // stop key from being added to value
+              if (!this.mainInput.value.empty()) { // value is non-empty
+                if (this.doubleKey) {
+                  this.mainInput.value = this.mainInput.value.replace(new RegExp("^" + this.encodeSearch(this.doubleKey)), '').replace(new RegExp(this.encodeSearch(this.doubleKey) + "$"), '');
+                }
+                this.addItem({ //add it
+                  caption: this.mainInput.value,
+                  value: this.mainInput.value
+                });
+                this.autoHide(); // hide autocomplete
+                this.lastRequestValue = null;
+                this.mainInput.clear().focus();
+                return;
+              }
+            }
         //this.mainInput.value = this.mainInput.value.replace(new RegExp(key.character+'$'), ''); // remove the character from the end of the input string.
       }
       var sVal = this.mainInput.value+ch;
+      if (this.doubleKey){
+        sVal = sVal.replace(new RegExp("^"+this.encodeSearch(this.doubleKey)), '');
+      }
       if (this.checkSearch(sVal)) {
         this.autoholder.descendants().each(function(ev){
           ev.hide();
@@ -826,6 +864,8 @@
       this.autoresults.update('').hide();
       this.autoholder.hide();
       this.blurhide = null;
+      this.doubleKey = false;
+      this.doubleEnd = false;
       return this;
     },
     
@@ -886,18 +926,22 @@
   
   //helper functions 
   Element.addMethods({
-    getCaretPosition: function(){
-      if (this.createTextRange) {
-        var r = document.selection.createRange().duplicate();
-        r.moveEnd('character', this.value.length);
-        if (r.text === '') {
-          return this.value.length;
-        }
-        return this.value.lastIndexOf(r.text);
+    getCaretPosition: function(el){
+      var pos = 0;
+      if (el.selectionStart || el.selectionStart == '0') {
+        pos = el.selectionStart;
       }
       else {
-        return this.selectionStart;
+        var r = document.selection.createRange().duplicate();
+        r.moveEnd('character', el.value.length);
+        if (r.text === '') {
+          pos = el.value.length;
+        }
+        else {
+          pos = el.value.lastIndexOf(r.text);
+        }
       }
+      return pos; 
     }
   });
   if (typeof(Object.deepExtend) == 'undefined') {
