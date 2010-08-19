@@ -146,6 +146,7 @@
       var callbacks = options.callbacks;
       options.callbacks = {};
       this.options = Object.deepExtend({
+        autoCompleteActive: true,
         url: null,
         opacity: 0.8, // opacity of drop down
         maxresults: Infinity, // max results to display in drop down
@@ -494,16 +495,18 @@
       }).bind(this));
     },
     setupAutoCompleteEvents: function(){
-      this.autoresults.observe('mouseover', (function(ev){
-        var el = ev.findElement('.auto-item');
-        if (el) {
-          this.autoFocus(el);
-        }
-        this.curOn = true;
-      }).bind(this));
-      this.autoresults.observe('mouseout', (function(){
-        this.curOn = false;
-      }).bind(this));
+      if (this.options.autoCompleteActive) {
+        this.autoresults.observe('mouseover', (function(ev){
+          var el = ev.findElement('.auto-item');
+          if (el) {
+            this.autoFocus(el);
+          }
+          this.curOn = true;
+        }).bind(this));
+        this.autoresults.observe('mouseout', (function(){
+          this.curOn = false;
+        }).bind(this));
+      }
     },
     /*
      * Create/rearrage required elements for the text input box
@@ -787,66 +790,69 @@
       }
       else {
         this.autoresults.show().update('');
-        var count = 0, matchCount = 0;
-        var regExp = new RegExp(this.options.regExp.replace('{0}', this.encodeSearch(search)), 'i');
-        var results = this.data.filter(function(obj){
-          if (matchCount === this.options.maxresults){
-            throw $break;
-          }
-          var returnVal = obj ? regExp.test(obj.caption) : false;
-          if (returnVal && this.options.uniqueValues) {
-            returnVal = !this.bits.find(function(item){
-              return item.value.caption === obj.caption;
-            });
-          }
-          if (returnVal){
-            matchCount++;
-          }
-          return returnVal;
-        }, this);
-        var secondaryRegExp;
-        if (this.options.secondaryRegExp) {
-          secondaryRegExp = new RegExp(this.options.secondaryRegExp.replace('{0}', this.encodeSearch(search)), 'i');
-          var secondaryResults = this.data.filter(function(obj){
-            if (matchCount === this.options.maxresults){
+        if (this.options.autoCompleteActive) {
+        
+          var count = 0, matchCount = 0;
+          var regExp = new RegExp(this.options.regExp.replace('{0}', this.encodeSearch(search)), 'i');
+          var results = this.data.filter(function(obj){
+            if (matchCount === this.options.maxresults) {
               throw $break;
             }
-            var returnVal = obj ? secondaryRegExp.test(obj.caption) && !results.find(function(item){
-                return item.caption === obj.caption;
-              }) : false;
+            var returnVal = obj ? regExp.test(obj.caption) : false;
             if (returnVal && this.options.uniqueValues) {
               returnVal = !this.bits.find(function(item){
                 return item.value.caption === obj.caption;
               });
             }
-            if (returnVal){
+            if (returnVal) {
               matchCount++;
             }
             return returnVal;
           }, this);
-          results = results.concat(secondaryResults);
-        }
-
-        results.each(function(result, ti){
-          count++;
-          if (ti >= this.options.maxresults) {
-            throw $break;
+          var secondaryRegExp;
+          if (this.options.secondaryRegExp) {
+            secondaryRegExp = new RegExp(this.options.secondaryRegExp.replace('{0}', this.encodeSearch(search)), 'i');
+            var secondaryResults = this.data.filter(function(obj){
+              if (matchCount === this.options.maxresults) {
+                throw $break;
+              }
+              var returnVal = obj ? secondaryRegExp.test(obj.caption) &&
+              !results.find(function(item){
+                return item.caption === obj.caption;
+              }) : false;
+              if (returnVal && this.options.uniqueValues) {
+                returnVal = !this.bits.find(function(item){
+                  return item.value.caption === obj.caption;
+                });
+              }
+              if (returnVal) {
+                matchCount++;
+              }
+              return returnVal;
+            }, this);
+            results = results.concat(secondaryResults);
           }
-          var el = new Element('li', {
-            'class': 'auto-item'
-          });
-          el.update(this.autoHighlight(result.caption, regExp, secondaryRegExp));
-          this.autoresults.insert(el);
-          el.store('result', result);
-          if (ti === 0) {
-            this.autoFocus(el);
+          
+          results.each(function(result, ti){
+            count++;
+            if (ti >= this.options.maxresults) {
+              throw $break;
+            }
+            var el = new Element('li', {
+              'class': 'auto-item'
+            });
+            el.update(this.autoHighlight(result.caption, regExp, secondaryRegExp));
+            this.autoresults.insert(el);
+            el.store('result', result);
+            if (ti === 0) {
+              this.autoFocus(el);
+            }
+          }, this);
+          if (count === 0) {
+            this.autoNoResults.show();
+            this.autoresults.hide();
           }
-        }, this);
-        if (count === 0) {
-          this.autoNoResults.show();
-          this.autoresults.hide();
         }
-        
       }
       return this;
     },
