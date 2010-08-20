@@ -146,8 +146,8 @@
       var callbacks = options.callbacks;
       options.callbacks = {};
       this.options = Object.deepExtend({
-        autoCompleteActive: true,
-        url: null,
+        autoCompleteActive: true, // set to false to disable autocomple (for use with free typing or to display a list of items)
+        url: null, // url for ajax request to retrieve data.  use this or pass an array with the data as the thrird param to the constructor.
         opacity: 0.8, // opacity of drop down
         maxresults: Infinity, // max results to display in drop down
         minchars: 1, // min characters to show dropdown
@@ -175,8 +175,8 @@
           onAfterUpdateValues: Prototype.emptyFunction,
           onControlLoaded: Prototype.emptyFunction
         },
-        disabledColor: 'silver',
-        disabledOpacity: 0.3,
+        disabledColor: 'silver', // color of shim to put on top when the control is disabled
+        disabledOpacity: 0.3,  // opacity of shim to put on top when the control is disabled
         className: 'bit', // common className to pre-pend to created elements. 
         uniqueValues: true // enforce uniqueness in selected items.
       }, options);
