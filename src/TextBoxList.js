@@ -33,7 +33,7 @@
  *  Credits:
  *  - Idea: Facebook + Apple Mail
  *  - Caret position method: Diego Perini <http://javascript.nwbox.com/cursor_position/cursor.js>
- *  - Guillermo Rauch: Original MooTools script
+ *  - Guillermo Rauch: Original MooTools script <http://devthought.com/projects/mootools/textboxlist/>
  *  - Ran Grushkowsky/InteRiders Inc. : Porting into Prototype and further development <http://interiders.com/>
  *  - Tim Fluehr: Rewrite/modifications <http://www.tfluehr.com>
  */
