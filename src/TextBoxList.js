@@ -858,11 +858,15 @@
     },
     
     autoHighlight: function(html, highlight, secondaryHighlight){
-      return html.gsub(highlight, function(match){
-        return '<em>' + match[0] + '</em>';
-      }).gsub(secondaryHighlight, function(match){
+      var retVal = html.gsub(highlight, function(match){
         return '<em>' + match[0] + '</em>';
       });
+      if (secondaryHighlight) {
+        retVal = retVal.gsub(secondaryHighlight, function(match){
+          return '<em>' + match[0] + '</em>';
+        });
+      }
+      return retVal;
     },
     
     autoHide: function(){

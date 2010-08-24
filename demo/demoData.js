@@ -12,11 +12,11 @@
     "value": 367
 }, {
     "caption": "calendar entries",
-    slug: "calendar-entries",
+    "slug": "calendar-entries",
     "value": 21
 }, {
     "caption": "Collaboration University",
-    slug: "collaboration-university",
+    "slug": "collaboration-university",
     "value": 1467
 }, {
     "caption": "JavaScript",
@@ -44,7 +44,7 @@
     "value": 1124
 }, {
     "caption": "lotus quickr",
-    slug: "lotus-quickr",
+    "slug": "lotus-quickr",
     "value": 2796
 }, {
     "caption": "movies",
