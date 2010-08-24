@@ -841,7 +841,7 @@
             var el = new Element('li', {
               'class': 'auto-item'
             });
-            el.update(this.autoHighlight(result.caption, regExp, secondaryRegExp));
+            el.update(this.autoCompleteItemHTML(result, regExp, secondaryRegExp));
             this.autoresults.insert(el);
             el.store('result', result);
             if (ti === 0) {
@@ -857,8 +857,8 @@
       return this;
     },
     
-    autoHighlight: function(html, highlight, secondaryHighlight){
-      var retVal = html.gsub(highlight, function(match){
+    autoCompleteItemHTML: function(result, highlight, secondaryHighlight){
+      var retVal = result.caption.gsub(highlight, function(match){
         return '<em>' + match[0] + '</em>';
       });
       if (secondaryHighlight) {
