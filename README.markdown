@@ -70,7 +70,7 @@ License
 
 
   [1]: http://www.prototypejs.org/
-  [2]: index.html
+  [2]: http://www.tfluehr.com/projects/TextboxList/docs/index.html
   [3]: http://interiders.com/
-  [4]: api.html
-  [5]: demos.html
+  [4]: http://www.tfluehr.com/projects/TextboxList/docs/api.html
+  [5]: http://www.tfluehr.com/projects/TextboxList/docs/demos.html
