@@ -1,0 +1,34 @@
+<h1><a href="index.html">TextboxList</a>: A <a href="http://www.prototypejs.org/">Prototype.js</a> based Text Box List</h1>
+
+<h2>Create a new instance:</h2>
+
+<blockquote>
+<pre><code>new TextboxList(Input, Options, [Data]);
+</code></pre>
+  
+  <ul>
+  <li><strong>Input</strong> - the Text Box to convert into a TextboxList (can be the id or the DOM Element)</li>
+  <li><strong>Options</strong> - An object containing all options for the TextboxList</li>
+  <li><strong>Data</strong>[<em>optional</em>] - An Array of data to be used for the auto completer.</li>
+  </ul>
+</blockquote>
+
+<h2>Auto completer data format:</h2>
+
+<blockquote>
+<pre><code>[{
+  "caption": "Caption 1",
+  "value": "Value 1"
+},
+{
+  "caption": "Caption 2",
+  "value": "Value 2"
+}]
+</code></pre>
+  
+  <ul>
+  <li><strong>caption</strong> is the value displayed in both the auto completer and what is displayed in the bubble.</li>
+  <li><strong>value</strong> is a hidden value that will be linked with the <strong>caption</strong>.  Think name/id pairs</li>
+  <li>You may also include any other additional properties and they will be posted as well.</li>
+  </ul>
+</blockquote>

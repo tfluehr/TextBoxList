@@ -3,13 +3,13 @@
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
         <title>TextboxList Demo</title>
-        <link rel="stylesheet" href="default.css" type="text/css" media="screen" title="Test Stylesheet" charset="utf-8" />
-        <link rel="stylesheet" href="demo.css" type="text/css" media="screen" title="Test Stylesheet" charset="utf-8" />
+        <link rel="stylesheet" href="../demo/default.css" type="text/css" media="screen" title="Test Stylesheet" charset="utf-8" />
+        <link rel="stylesheet" href="../demo/demo.css" type="text/css" media="screen" title="Test Stylesheet" charset="utf-8" />
         <script src="../lib/prototype.js" type="text/javascript" charset="utf-8">
         </script>
         <script src="../src/TextBoxList.js" type="text/javascript" charset="utf-8">
         </script>
-        <script src="demo.js" type="text/javascript" charset="utf-8">
+        <script src="../demo/demo.js" type="text/javascript" charset="utf-8">
         </script>
     </head>
     <body id="test">
@@ -26,17 +26,22 @@
               <label>autoCompleteActive: <input type="checkbox" selected name="autoCompleteActive" /></label>
             </fieldset>
           -->
-            <ol>
-                <li id="facebook-list" class="input-text">
-                    <label for="autocompleteDemo">
-                        AutoComplete input
+            <ul>
+                <li>
+                    <label class="PrimaryInfo" for="autocompleteDemo">
+                        AutoComplete via url:
                     </label>
-                    <input type="text" id="autocompleteDemo" />
+                    <label class="SecondaryInfo" for="autocompleteDemo">
+                        Basic Auto Complete via ajax.
+                    </label>
+                    <input class="TBL" type="text" id="autocompleteDemo" />
+                    <label class="SubmitInfo"></label>
+                    <code class="SubmitCode" id="autocompleteSubmit"></code>
                 </li>
-            </ol>
+            </ul>
             
             
-            <input type="submit" value="Submit Form" id="submitBtn">
+            <input type="button" value="Submit Test" id="submitBtn">
         </form>
     </body>
 </html>

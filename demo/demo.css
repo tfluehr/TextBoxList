@@ -1,4 +1,20 @@
-label{
-  width:32%;
-  display: inline-block;
+.PrimaryInfo, 
+.SecondaryInfo {
+  width: 100%;
+  display: block;
+}
+
+.PrimaryInfo {
+  font-weight: bold;
+  font-size: 110%;
+}
+
+.SecondaryInfo {
+  font-style: italic;
+  text-indent: 15px;
+}
+
+.SubmitInfo, 
+.SubmitCode {
+  display: none;
 }
