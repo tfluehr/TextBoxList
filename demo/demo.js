@@ -1,18 +1,21 @@
 var demos = {};
 var demoData = null;
-function autocomplete(){
-      top.console.log('hi');
-  demos.autocomplete = new TextboxList('autocompleteDemo', {
+function autocompleteUrlDemo(){
+  demos.autocompleteUrlDemo = new TextboxList('autocompleteUrlDemo', {
     url: '../demo/demoData.js',
-    hintMessage: 'This is a simple Auto Complete Textbox List'
+    hintMessage: 'This is a simple Auto Complete Textbox List searching/loading data from a url'
   });
 }
-
-
-function activateDemos(){
-  autocomplete();
+function autocompleteLocalDemo(){
+  demos.autocompleteLocalDemo = new TextboxList('autocompleteLocalDemo', {
+    hintMessage: 'This is a simple Auto Complete Textbox List with it\'s data provided in an array and some values automatically selected'
+  }, demoData);
 }
 
+function activateDemos(){
+  autocompleteUrlDemo();
+  autocompleteLocalDemo();
+}
 document.observe('dom:loaded', function(){
   new Ajax.Request('../demo/demoData.js', {
     method: 'get',

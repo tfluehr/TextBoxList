@@ -32,3 +32,52 @@
   <li>You may also include any other additional properties and they will be posted as well.</li>
   </ul>
 </blockquote>
+
+<h2>Posted Values:</h2>
+
+<blockquote>
+  <p>Values for will be loaded from/posted to the server in the form of serialized JSON in the input field's value property</p>
+</blockquote>
+
+<h2>Options:</h2>
+
+<blockquote>
+  <p>Data Type and Default value are shown in parenthesis. </p>
+</blockquote>
+
+<ul>
+<li><strong>autoCompleteActive</strong> (Boolean = <em>true</em>) - Whether to use the auto complete functionality
+<ul><li>When set to false there will be no lookup so you can use the control to simply display or manually enter values</li></ul></li>
+<li><strong>url</strong> (String = <em>null</em>) - The url to use for auto complete. 
+<ul><li>An AJAX request will be sent to this address whenever the user types more then <strong>minchars</strong></li></ul></li>
+<li><strong>opacity</strong> (Number = <em>0.8</em>) - The Opacity to use for the auto complete/message drop down </li>
+<li><strong>maxresults</strong> (Integer = <em>Infinity</em>) - The Maximum number of items to display in the auto complete drop down.
+<ul><li>By default the auto complete does not use a scroll bar and instead uses this property to decide how many items to display</li>
+<li>If you want a scroll bar you can adjust your css styles.</li></ul></li>
+<li><strong>minchars</strong> (Integer = <em>1</em>) - The minimum number of character for activating the auto complete dropdown 
+<ul><li>Very useful for limiting the number of requests to your server when using the AJAX auto complete.</li></ul></li>
+<li><strong>noResultsMessage</strong> (String = <em>"No values found"</em>) - Message to display when the search string is not found in the auto complete data. </li>
+<li><strong>hintMessage</strong> (String = <em>null</em>) - Message to display the text box list receives focus.
+<ul><li>Can be used to give the user some additional info.</li></ul></li>
+<li><strong>requestDelay</strong> (Number = <em>0.3</em>) - The delay (in seconds) after last keypress to wait before sending an AJAX request.
+<ul><li>Very useful for limiting the number of requests to your server when using the AJAX auto complete.</li></ul></li>
+<li><strong>parent</strong> (String/Element = <em>document.body</em>) - The id or DOM Element that the auto complete/message div will be added to.
+<ul><li>Depending on your page layout and/or css you may need to change this.</li></ul></li>
+<li><strong>startsWith</strong> (Boolean = <em>false</em>) - Limit the auto complete matches to only items that start with the search value</li>
+<li><strong>regExp</strong> (String = <em>"^{0}" or "{0}" depending on <strong>startsWith</strong></em><strong></strong>) - The regular expression to use for matching/highlighting auto complete values.
+<ul><li>Can be changed to any valid regular expression string</li></ul></li>
+<li><strong>secondaryRegExp</strong> (String = <em>null</em>) - A Secondary regular expression to use for matching/highlighting auto complete values.
+<ul><li>Can be changed to any valid regular expression string</li>
+<li>Useful in combination with <strong>regExp</strong> if you want to match on two different items.  For example you want to search the same data set twice.  First for items that start with, and then for items that just contain.</li>
+<li>The results of <strong>secondaryRegExp</strong> are appended to the results of <strong>regExp</strong></li></ul></li>
+<li><strong>selectKeys</strong> (Array = <em>[{ keyCode: Event.KEY_RETURN }, { keyCode: Event.KEY_TAB }]</em>) - An Array of keys to be used to select an item from the auto complete dropdown.
+<ul><li>If the key is non-printable you simple add an Object to the Array with one property "keyCode" with it's value set to the ascii keyCode.</li>
+<li><em>Still needs to be implemented</em> - If the key is printable then you would add an Object to the Array with two properties "character" set to the actual character to match AND "printable" set to true.</li></ul></li>
+<li><strong>customTagKeys</strong> (Array = <em>[}]</em>) - An Array of keys to be used to add the current text as a value (not from auto complete).
+<ul><li><em>Still needs to be tested</em> - If the key is non-printable you simple add an Object to the Array with one property "keyCode" with it's value set to the ascii keyCode.</li>
+<li>If the key is printable then you would add an Object to the Array with two properties "character" set to the actual character to match AND "printable" set to true.
+<ul><li>Also supports requiring two instances of "character" for a match.  One at the beginning of the string and one at the end. Example: customTagKeys = [{ character: '"', printable: true, isPair: true }, { character: ' ', printable: true }]</li>
+<li>In this example if the user is typing and hits "space" then it would add the current text, unless the text started with " then it would wait for another " to be entered to add the item.</li></ul></li></ul></li>
+<li><strong>disabledColor</strong> (String = <em>silver</em>) - The color of a div that will be placed over top of the control when it is disabled.</li>
+<li><strong>disabledOpacity</strong> (Number= <em>0.3</em>) - The opacity of a div that will be placed over top of the control when it is disabled.</li>
+</ul>
