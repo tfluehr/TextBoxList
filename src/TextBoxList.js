@@ -152,8 +152,7 @@
         maxresults: Infinity, // max results to display in drop down
         minchars: 1, // min characters to show dropdown
         noResultsMessage: 'No values found',
-        message: '&nbsp;', // message to be displayed 
-        showMessage: false, // whether to show the message on focus
+        hintMessage: null, // message to be displayed 
         requestDelay: 0.3, // delay (in seconds) after last keypress before sending request.
         parent: document.body, // parent element for autocomplete dropdown.
         startsWith: false, // limit match to starts with
@@ -403,7 +402,7 @@
         this.autoholder.descendants().each(function(ev){
           ev.hide();
         });
-        if (this.options.showMessage) {
+        if (this.options.hintMessage) {
           this.autoMessage.show();
         }
         this.autoresults.update('').hide();
@@ -539,7 +538,7 @@
       }).hide().store('parentTextboxList', this.container.identify());
       this.autoMessage = new Element('div', { // message to display before user types anything
         'class': 'ACMessage'
-      }).update(this.options.message).hide();
+      }).update(this.options.hintMessage).hide();
       this.autoNoResults = new Element('div', { // message to display when no autocomplete results
         'class': 'ACMessage'
       }).update(this.options.noResultsMessage).hide();
@@ -783,7 +782,7 @@
         ev.hide();
       });
       if (this.checkSearch(search)) {
-        if (this.options.showMessage && !this.blurhide) {
+        if (this.options.hintMessage && !this.blurhide) {
           this.autoMessage.show();
         }
         this.autoresults.update('').hide();
