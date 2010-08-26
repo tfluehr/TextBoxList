@@ -68,9 +68,97 @@ Options:
     - If the key is printable then you would add an Object to the Array with two properties "character" set to the actual character to match AND "printable" set to true.
       - Also supports requiring two instances of "character" for a match.  One at the beginning of the string and one at the end. Example: customTagKeys = [{ character: '"', printable: true, isPair: true }, { character: ' ', printable: true }]
         - In this example if the user is typing and hits "space" then it would add the current text, unless the text started with " then it would wait for another " to be entered to add the item.
-  - **disabledColor** (String = *silver*) - The color of a div that will be placed over top of the control when it is disabled.
+  - **disabledColor** (String = *"silver"*) - The color of a div that will be placed over top of the control when it is disabled.
   - **disabledOpacity** (Number= *0.3*) - The opacity of a div that will be placed over top of the control when it is disabled.
+  - **className** (String= *"bit"*) - A string to pre-pend to the css class name for each selected item
+  - **uniqueValues** (Boolean= *true*) - Force selected items to be unique.
+    - Any previously selected items will be excluded from the auto complete list.
+  - **callbacks** (Object= *see **Callback Functions** section*) - See below.
 
+Callback Functions:
+-------------------
+
+> All callbacks default to an empty function.  When specifying callback you only need to add the ones you need as properties of a **callbacks** options specified in the options of the Textbox List constructor.
+
+
+> **onMainFocus**(event) - Occurs after the Textbox List's focus event has completed.
+
+>  - Receives the focus Event as it's only argument
+
+> **onMainBlur**(event) - Occurs after the Textbox List's blur event has completed.
+
+>  - Receives the focus Event as it's only argument
+
+> **onBeforeAddItem**(selectedValues, value, element)- Occurs prior to an item being added to the Textbox List.  Return *true* from your function to stop the item from being added.
+
+>  - **selectedValues** (Array) - An Array of the currently selected items in the Textbox List.
+>  - **value** (Object) - An Object of the item to be added to the Textbox List.
+>  - **element** (Element) - The HTML Element to be added to the Textbox List.
+
+> **onAfterAddItem**(selectedValues, value, element) - Occurs after the an item was added to the Textbox List.
+
+>  - **selectedValues** (Array) - An Array of the currently selected items in the Textbox List.
+>  - **value** (Object) - An Object of the item that was added to the Textbox List.
+>  - **element** (Element) - The HTML Element that was added to the Textbox List.
+
+> **onBeforeUpdateValues** - Occurs before the currently selected values are written to the source input box
+
+>  - **selectedValues** (Array) - An Array of the currently selected items in the Textbox List.
+>  - **element** (Element) - The source HTML Input Element for the Textbox List.
+
+> **onAfterUpdateValues**(selectedValues, value, element) - Occurs after the currently selected values have been written to the source input box
+
+>  - **selectedValues** (Array) - An Array of the currently selected items in the Textbox List.
+>  - **element** (Element) - The source HTML Input Element for the Textbox List.
+
+> **onControlLoaded**() - Occurs only once when the Textbox List control has first been created and is ready for use.
+
+
+Useful function calls:
+----------------------
+
+>     var instance = new TextboxList(Input, Options, [Data]);
+
+>  - *instance.disable();*
+>    - Will disable the TextBox List
+>    - **Note** - The Textbox List will automatically disable itself based on the *disabled* property of the underlying text input
+
+>  - *instance.enable();*
+>    - Will enable the TextBox List
+
+>  - *instance.isDisabled([disable]);*
+>    - Returns true if the Textbox List is currently disabled.
+>    - *optional* **disable** (Boolean) - pass a boolean value to disable/enable the Textbox List as part of the call.
+
+>  - *instance.addItem(value);*
+>    - Adds a new item to the Textbox List
+>    - Returns *true* if item was added successfully, *null* if it wasn't
+>    - **value** (Object) - Pass an object containing any number of properties to add it to the Textbox List.  A property named **caption** is required.
+
+>  - *instance.removeElement(element);*
+>    - Removes an item from the list
+>    - **element** (Element) - Pass the HTML Element of the item to be removed.
+
+>  - *instance.removeItem(value, [replaceAll]);*
+>    - Removes an item(s) from the list
+>    - **value** (Object) - Pass an Object containing the to search the selected items by.  A property named **caption** and/or **value** is required or no item(s) will be removed,
+>    - *optional* **replaceAll** (Boolean) - whether to remove all items matching the value, or just the first one.
+
+>  - ***TextboxList.autoCompleteItemHTML***
+>> TextboxList.addMethods({
+>>> autoCompleteItemHTML: function(value, highlight, [secondaryHighlight]) {
+>>>> // return the HTML/DOM Element for an auto complete item
+
+>>>> }
+
+>>> });
+
+>>   - Override the TextboxList.autoCompleteItemHTML function if you wish to change the HTML of the auto complete items.
+>>   - This function must return a value compatible with Element.update
+>>   - **value** (Object) - The value for the current auto complete item
+>>   - **highlight** (RegExp) - The regular expression object that was used for the search.
+>>   - *optional* **secondaryHighlight** (RegExp) - The secondary regular expression object that was used for the search.
 
   [1]: http://www.prototypejs.org/
   [2]: index.html
+

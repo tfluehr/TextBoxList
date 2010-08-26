@@ -605,7 +605,7 @@
       el.down('a').stopObserving();
       el.stopObserving().remove();
       this.updateInputValue();
-      return this;
+//      return this;
     },
     removeItem: function(obj, all){
       var id, foundObj;
@@ -640,9 +640,7 @@
     },
     mainFocus: function(ev){
       this.focus(ev.element(), false, true);
-      if (this.options.callbacks.onMainFocus){
-        this.options.callbacks.onMainFocus(ev);
-      }
+      this.options.callbacks.onMainFocus(ev);
     },
     focus: function(el, nofocus, onFocus){
       if (this.isDisabled()){
@@ -669,9 +667,7 @@
     },
     mainBlur: function(ev){
       this.blur(false);
-      if (this.options.callbacks.onMainBlur){
-        this.options.callbacks.onMainBlur(ev);
-      }
+      this.options.callbacks.onMainBlur(ev);
     },
     blur: function(noblur, onFocus){
       if (this.isDisabled()){
@@ -731,10 +727,6 @@
           this.mainInput.focus();
         }
       }
-    },
-    
-    isSelfEvent: function(type){
-      return (this.events.get(type)) ? !!this.events.unset(type) : false;
     },
     
     makeResizable: function(li){
