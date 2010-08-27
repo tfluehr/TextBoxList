@@ -14,7 +14,7 @@ function autocompleteLocalDemo(){
 }
 
 function autocompleteAdvancedDemo(){
-  demos.autocompleteLocalDemo = new TextboxList('autocompleteAdvancedDemo', {
+  demos.autocompleteAdvancedDemo = new TextboxList('autocompleteAdvancedDemo', {
     maxresults: 4,
     startsWith: true,
     secondaryRegExp: '{0}',
@@ -34,10 +34,26 @@ function autocompleteAdvancedDemo(){
   }, demoData);
 }
 
+function typingListDemo(){
+  demos.typingListDemo = new TextboxList('typingListDemo', {
+    autoCompleteActive: false,
+    customTagKeys: [{
+      character: '"',
+      printable: true,
+      isPair: true
+    }, {
+      character: ' ',
+      printable: true
+    }],
+    hintMessage: 'This list has no auto complete.  It is just a free typing list.'
+  });
+}
+
 function activateDemos(){
   autocompleteUrlDemo();
   autocompleteLocalDemo();
   autocompleteAdvancedDemo();
+  typingListDemo();
 }
 
 document.observe('dom:loaded', function(){

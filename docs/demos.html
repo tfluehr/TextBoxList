@@ -91,6 +91,31 @@
                     <label class="SubmitInfo"> </label>
                     <code class="SubmitCode"> </code>
                 </li>
+                <li>
+                    <label class="PrimaryInfo">
+                        Typing List:
+                    </label>
+                    <label class="SecondaryInfo">
+                        No auto complete, just a list that is filled by typing.  Use space to seperate words, and double quotes to enclose phrases. 
+                    </label>
+                    <pre>
+  demos.typingListDemo = new TextboxList('typingListDemo', {
+    autoCompleteActive: false,
+    customTagKeys: [{
+      character: '"',
+      printable: true,
+      isPair: true
+    }, {
+      character: ' ',
+      printable: true
+    }],
+    hintMessage: 'This list has no auto complete.  It is just a free typing list.'
+  });
+                    </pre>
+                    <input class="TBL" type="text" id="typingListDemo" />
+                    <label class="SubmitInfo"> </label>
+                    <code class="SubmitCode"> </code>
+                </li>
             </ul>
             
             
