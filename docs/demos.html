@@ -34,6 +34,11 @@
                     <label class="SecondaryInfo">
                         Basic Auto Complete with pre existing values.
                     </label>
+                    <pre>
+  demos.autocompleteLocalDemo = new TextboxList('autocompleteLocalDemo', {
+    hintMessage: 'This is a simple Auto Complete Textbox List with it\'s data provided in an array and some values automatically selected'
+  }, demoData);
+                    </pre>
                     <input class="TBL" type="text" id="autocompleteLocalDemo" value="[{&quot;caption&quot;: &quot;JavaScript&quot;, &quot;value&quot;: 1173}, {&quot;caption&quot;: &quot;templates&quot;, &quot;value&quot;: 1735}, {&quot;caption&quot;: &quot;calendar entries&quot;, &quot;slug&quot;: &quot;calendar-entries&quot;, &quot;value&quot;: 21}]"/>
                     <label class="SubmitInfo"> </label>
                     <code class="SubmitCode"> </code>
@@ -45,7 +50,44 @@
                     <label class="SecondaryInfo">
                         Basic Auto Complete via ajax.
                     </label>
+                    <pre>
+  demos.autocompleteUrlDemo = new TextboxList('autocompleteUrlDemo', {
+    url: '../demo/demoData.js',
+    hintMessage: 'This is a simple Auto Complete Textbox List searching/loading data from a url'
+  });
+                    </pre>
                     <input class="TBL" type="text" id="autocompleteUrlDemo" />
+                    <label class="SubmitInfo"> </label>
+                    <code class="SubmitCode"> </code>
+                </li>
+                <li>
+                    <label class="PrimaryInfo">
+                        Advanced AutoComplete:
+                    </label>
+                    <label class="SecondaryInfo">
+                        Advanced Auto Complete with pre existing values and several options specified.  Please see the <a href="api.html">API</a> for a description of the options.
+                    </label>
+                    <pre>
+  demos.autocompleteLocalDemo = new TextboxList('autocompleteAdvancedDemo', {
+    maxresults: 4,
+    startsWith: true,
+    secondaryRegExp: '{0}',
+    selectKeys: [{
+      keyCode: Event.KEY_TAB
+    }],
+    customTagKeys: [{
+      character: '"',
+      printable: true,
+      isPair: true
+    }, {
+      character: ' ',
+      printable: true
+    }],
+    noResultsMessage: 'There were no results found matching your search string.',
+    hintMessage: 'This is an advanced Auto Complete Textbox List with it\'s data provided in an array and some values automatically selected.  It has a log of different options set.'
+  }, demoData);
+                    </pre>
+                    <input class="TBL" type="text" id="autocompleteAdvancedDemo" value="[{&quot;caption&quot;: &quot;JavaScript&quot;, &quot;value&quot;: 1173}, {&quot;caption&quot;: &quot;templates&quot;, &quot;value&quot;: 1735}, {&quot;caption&quot;: &quot;calendar entries&quot;, &quot;slug&quot;: &quot;calendar-entries&quot;, &quot;value&quot;: 21}]"/>
                     <label class="SubmitInfo"> </label>
                     <code class="SubmitCode"> </code>
                 </li>
