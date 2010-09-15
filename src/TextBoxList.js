@@ -850,14 +850,14 @@
     
     autoCompleteItemHTML: function(result, highlight, secondaryHighlight){
       var retVal = result.caption.gsub(highlight, function(match){
-        return '<em>' + match[0] + '</em>';
+        return '\t\t\t' + match[0] + '\f\f\f';
       });
       if (secondaryHighlight) {
         retVal = retVal.gsub(secondaryHighlight, function(match){
-          return '<em>' + match[0] + '</em>';
+          return '\t\t\t' + match[0] + '\f\f\f';
         });
       }
-      return retVal;
+      return retVal.replace(/\t\t\t/g, '<em>').replace(/\f\f\f/g, '</em>');
     },
     
     autoHide: function(){
