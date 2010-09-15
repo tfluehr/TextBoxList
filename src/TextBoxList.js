@@ -148,6 +148,7 @@
       this.options = Object.deepExtend({
         autoCompleteActive: true, // set to false to disable autocomple (for use with free typing or to display a list of items)
         url: null, // url for ajax request to retrieve data.  use this or pass an array with the data as the thrird param to the constructor.
+        ajaxParamName: 'SearchValue', // name of the parameter to send to the server in ajax requests
         opacity: 0.8, // opacity of drop down
         maxresults: Infinity, // max results to display in drop down
         minchars: 1, // min characters to show dropdown
@@ -172,7 +173,8 @@
           onAfterAddItem: Prototype.emptyFunction,
           onBeforeUpdateValues: Prototype.emptyFunction,
           onAfterUpdateValues: Prototype.emptyFunction,
-          onControlLoaded: Prototype.emptyFunction
+          onControlLoaded: Prototype.emptyFunction,
+          onBeforeAjaxRequest: Prototype.emptyFunction
         },
         disabledColor: 'silver', // color of shim to put on top when the control is disabled
         disabledOpacity: 0.3,  // opacity of shim to put on top when the control is disabled
@@ -416,16 +418,17 @@
             if (!this.mainInput.value.empty() && (this.mainInput.value != this.lastRequestValue || forceSearch)) { // only send request if value has changed since last request
               this.lastRequestValue = this.mainInput.value;
               if (!sVal.empty()) {
-                new Ajax.Request(this.options.url, {
-                  parameters: {
-                    SearchValue: this.mainInput.value
-                  },
+                var options = {
+                  parameters: {},
                   method: 'get',
                   onSuccess: (function(transport){
                     this.data = transport.responseText.evalJSON(true);
                     this.autoShow(this.mainInput.value);
                   }).bind(this)
-                });
+                };                
+                options.parameters[this.options.ajaxParamName] = this.mainInput.value;
+                this.options.callbacks.onBeforeAjaxRequest(options);
+                new Ajax.Request(this.options.url, options);
               }
             }
           }).bind(this).delay(this.options.requestDelay); // delay request by "options.requestDelay" seconds to wait for user to finish typing

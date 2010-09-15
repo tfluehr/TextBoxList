@@ -1,0 +1,5 @@
+Version 0.6
+
+- Correct highlighting issue where "e" and/or "m" portions of the html could be replaced.
+- Make AJAX Search name a parameter. Defaults to "SearchValue"
+- Add new callback "onBeforeAjaxRequest".  Receives the options of the ajax request as a parameter.
