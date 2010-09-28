@@ -174,7 +174,8 @@
           onBeforeUpdateValues: Prototype.emptyFunction,
           onAfterUpdateValues: Prototype.emptyFunction,
           onControlLoaded: Prototype.emptyFunction,
-          onBeforeAjaxRequest: Prototype.emptyFunction
+          onBeforeAjaxRequest: Prototype.emptyFunction,
+          onBeforeRemoveElement: Prototype.emptyFunction
         },
         disabledColor: 'silver', // color of shim to put on top when the control is disabled
         disabledOpacity: 0.3,  // opacity of shim to put on top when the control is disabled
@@ -600,14 +601,16 @@
      * el: Element - the element to remove
      */
     removeElement: function(el){
-      this.bits.unset(el.id);
-      if (this.current == el) {
-        this.focus(el.next('.bit-box, .bit-input'));
+      if (!this.options.callbacks.onBeforeRemoveElement(this.bits.values(), el)) {
+        this.bits.unset(el.id);
+        if (this.current == el) {
+          this.focus(el.next('.bit-box, .bit-input'));
+        }
+        this.autoFeed(el.retrieve('value'));
+        el.down('a').stopObserving();
+        el.stopObserving().remove();
+        this.updateInputValue();
       }
-      this.autoFeed(el.retrieve('value'));
-      el.down('a').stopObserving();
-      el.stopObserving().remove();
-      this.updateInputValue();
 //      return this;
     },
     removeItem: function(obj, all){
