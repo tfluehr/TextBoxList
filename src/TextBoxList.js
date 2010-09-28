@@ -281,7 +281,7 @@
           this.mainInput.clear().focus();
         }
       }
-      else if (this.options.selectKeys.find(function(item){
+      else if (this.options.autoCompleteActive && this.options.selectKeys.find(function(item){
             return item.keyCode === ev.keyCode && !item.printable;
           })) {
         if (this.autoresults.visible()) {
@@ -480,7 +480,7 @@
     },
     setupMainInputEvents: function(){
       this.mainInput.observe('keydown', (function(ev){
-        if (this.autoresults.childElements().size() > 0 &&
+        if (this.options.autoCompleteActive && this.autoresults.childElements().size() > 0 &&
         this.options.selectKeys.find(function(item){
           return item === ev.keyCode;
         })) {
