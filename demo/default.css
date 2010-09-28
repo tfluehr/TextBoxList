@@ -29,6 +29,13 @@
     margin: 2px 4px;
 }
 
+.TextboxList ul.holder li.bit-input
+{
+    margin: 2px 0px 2px 4px;
+    white-space: nowrap;
+    padding: 0px;
+}
+
 .TextboxList ul.holder li.bit-box-focus
 {
     border-color: #598BEC;
@@ -42,16 +49,12 @@
     border: 1px none transparent; /* IE7 is royally f'ed up in that boder: none is not good enough.  we also need to give it a border-width and a border-color */
     outline: 0;
     padding: 0px;
-    margin: 3px 0px 2px 4px;
-    float: left;
 }
 
-/*
-.TextboxList ul.holder li.bit-box + input.maininput
+.TextboxList ul.holder li.bit-box + li.bit-input
 {
-    margin: 5px 0px 0px 0px;
+    margin: 3px 0px 0px 0px;
 }
-*/
 
 .TextboxList ul.holder li.bit-box:hover
 {
