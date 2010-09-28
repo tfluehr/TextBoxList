@@ -460,7 +460,7 @@
         ev.stop();
         this.focus(el);
       }
-      else if (this.mainInput != this.current) { // clicked anywhere else so focus the text box for typing
+      else if (this.mainInput.up('li') != this.current) { // clicked anywhere else so focus the text box for typing
         this.focus(this.mainInput);
       }
     },
@@ -573,7 +573,7 @@
         'id': id
       });
       if (!this.options.callbacks.onBeforeAddItem(this.bits.values(), val, el)) {
-        this.mainInput.insert({
+        this.mainInput.up('li').insert({
           'before': el
         });
         this.bits.set(id, val);
@@ -602,7 +602,7 @@
     removeElement: function(el){
       this.bits.unset(el.id);
       if (this.current == el) {
-        this.focus(el.next());
+        this.focus(el.next('.bit-box, .bit-input'));
       }
       this.autoFeed(el.retrieve('value'));
       el.down('a').stopObserving();
@@ -649,12 +649,15 @@
       if (this.isDisabled()){
         return;
       }
+      if (el == this.mainInput){
+        el = el.up('li');
+      }
       if (el != this.container) {
         if (this.current == el) {
           return this;
         }
         this.blur(null, onFocus);
-        if (el == this.mainInput) {
+        if (el == this.mainInput.up('li')) {
           this.autoShow(this.mainInput.value);
         }
         el.addClassName(this.options.className + '-' + el.retrieve('type') + '-focus');
@@ -679,7 +682,7 @@
       if (!this.current) {
         return this;
       }
-      if (this.current == this.mainInput || this.current.match('.bit-box')) {
+      if (this.current == this.mainInput.up('li') || this.current.match('.bit-box')) {
         if (!noblur) {
           this.callEvent(this.mainInput, 'blur', onFocus);
         }
@@ -745,7 +748,7 @@
     },
     
     move: function(direction){
-      var el = this.current[(direction == 'left' ? 'previous' : 'next')]();
+      var el = this.current[(direction == 'left' ? 'previous' : 'next')]('.bit-box, .bit-input');
       if (el && (this.checkInput() || direction == 'right')) {
         this.focus(el);
       }
@@ -756,8 +759,8 @@
       if (this.current.retrieve('type') == 'box') {
         this.removeElement(this.current);
       }
-      else if (this.checkInput() && this.bits.keys().length && this.current.previous()) {
-        this.focus(this.current.previous());
+      else if (this.checkInput() && this.bits.keys().length && this.current.previous('.bit-box, .bit-input')) {
+        this.focus(this.current.previous('.bit-box, .bit-input'));
       }
       this.autoPosition(true);
     },
@@ -887,7 +890,7 @@
       if (this.autoresults.childElements().size() === 0) {
         return;
       }
-      this.autoFocus(this.autocurrent[(direction == 'up' ? 'previous' : 'next')]());
+      this.autoFocus(this.autocurrent[(direction == 'up' ? 'previous' : 'next')]('.bit-box, .bit-input'));
       this.autoresults.scrollTop = this.autocurrent.positionedOffset()[1] - this.autocurrent.getHeight();
       return this;
     },
