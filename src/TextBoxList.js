@@ -147,6 +147,7 @@
       options.callbacks = {};
       this.options = Object.deepExtend({
         autoCompleteActive: true, // set to false to disable autocomple (for use with free typing or to display a list of items)
+        hideInput: false, // hide the main input box.  helpful for using the control for just displaying info.
         url: null, // url for ajax request to retrieve data.  use this or pass an array with the data as the thrird param to the constructor.
         ajaxParamName: 'SearchValue', // name of the parameter to send to the server in ajax requests
         opacity: 0.8, // opacity of drop down
@@ -480,22 +481,24 @@
       }).bind(this));
     },
     setupMainInputEvents: function(){
-      this.mainInput.observe('keydown', (function(ev){
-        if (this.options.autoCompleteActive && this.autoresults.childElements().size() > 0 &&
-        this.options.selectKeys.find(function(item){
-          return item === ev.keyCode;
-        })) {
-          ev.stop(); // auto complete visible so stop on Return to prevent form submit
-        }
-      }).bind(this));
-      this.mainInput.observe('blur', this.mainBlur.bindAsEventListener(this, false));
-      this.mainInput.observe('focus', this.mainFocus.bindAsEventListener(this));
-      this.mainInput.observe('keydown', (function(ev){
-        if (this.isDisabled()){
-          return;
-        }
-        ev.element().store('lastvalue', ev.element().value).store('lastcaret', ev.element().getCaretPosition());
-      }).bind(this));
+      if (!this.options.hideInput) {
+        this.mainInput.observe('keydown', (function(ev){
+          if (this.options.autoCompleteActive && this.autoresults.childElements().size() > 0 &&
+          this.options.selectKeys.find(function(item){
+            return item === ev.keyCode;
+          })) {
+            ev.stop(); // auto complete visible so stop on Return to prevent form submit
+          }
+        }).bind(this));
+        this.mainInput.observe('blur', this.mainBlur.bindAsEventListener(this, false));
+        this.mainInput.observe('focus', this.mainFocus.bindAsEventListener(this));
+        this.mainInput.observe('keydown', (function(ev){
+          if (this.isDisabled()) {
+            return;
+          }
+          ev.element().store('lastvalue', ev.element().value).store('lastcaret', ev.element().getCaretPosition());
+        }).bind(this));
+      }
     },
     setupAutoCompleteEvents: function(){
       if (this.options.autoCompleteActive) {
@@ -526,7 +529,7 @@
         'class': 'holder'
       }).insert(this.createInput({ // input to type into
         'class': 'maininput'
-      }));
+      })[this.options.hideInput ? 'hide' : 'show']());
       this.input.insert({
         'before': this.container
       });
@@ -696,6 +699,9 @@
       return this;
     },
     inputBlur: function(el){
+      if (this.options.hideInput && el == this.mainInput){
+        return;
+      }
       if (!this.curOn) {
         this.blurhide = this.autoHide.bind(this).delay(0.1);
       }
@@ -731,6 +737,9 @@
     },
     
     callEvent: function(el, type, onFocus){
+      if (this.options.hideInput){
+        return;
+      }
       if (!onFocus) {
         if (type == 'focus') {
           this.mainInput.focus();
