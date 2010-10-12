@@ -410,6 +410,7 @@
           this.autoMessage.show();
         }
         this.autoresults.update('').hide();
+        this.autoPosition.bind(this, true).defer();
       }
       else {
         this.focus(this.mainInput);// make sure input has focus
@@ -649,6 +650,9 @@
     },
     mainFocus: function(ev){
       this.focus(ev.element(), false, true);
+      this.mainInput.setStyle({
+        width: ''
+      });
       this.options.callbacks.onMainFocus(ev);
     },
     focus: function(el, nofocus, onFocus){
@@ -679,6 +683,9 @@
     },
     mainBlur: function(ev){
       this.blur(false);
+      this.mainInput.setStyle({
+        width: '0px'
+      });
       this.options.callbacks.onMainBlur(ev);
     },
     blur: function(noblur, onFocus){
@@ -796,11 +803,11 @@
           this.autoMessage.show();
         }
         this.autoresults.update('').hide();
+        this.autoPosition.bind(this, true).defer();
       }
       else {
         this.autoresults.show().update('');
-        if (this.options.autoCompleteActive) {
-        
+        if (this.options.autoCompleteActive) {        
           var count = 0, matchCount = 0;
           var regExp = new RegExp(this.options.regExp.replace('{0}', this.encodeSearch(search)), 'i');
           var results = this.data.filter(function(obj){
