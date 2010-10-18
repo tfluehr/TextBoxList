@@ -806,8 +806,8 @@
         this.autoPosition.bind(this, true).defer();
       }
       else {
-        this.autoresults.show().update('');
         if (this.options.autoCompleteActive) {        
+          this.autoresults.show().update('');
           var count = 0, matchCount = 0;
           var regExp = new RegExp(this.options.regExp.replace('{0}', this.encodeSearch(search)), 'i');
           var results = this.data.filter(function(obj){
