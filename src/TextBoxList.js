@@ -650,9 +650,6 @@
     },
     mainFocus: function(ev){
       this.focus(ev.element(), false, true);
-      this.mainInput.setStyle({
-        width: ''
-      });
       this.options.callbacks.onMainFocus(ev);
     },
     focus: function(el, nofocus, onFocus){
@@ -661,6 +658,9 @@
       }
       if (el == this.mainInput){
         el = el.up('li');
+        this.mainInput.setStyle({
+          width: ''
+        });
       }
       if (el != this.container) {
         if (this.current == el) {
