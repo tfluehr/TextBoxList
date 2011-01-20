@@ -36,7 +36,8 @@
                     </label>
                     <pre>
   demos.autocompleteLocalDemo = new TextboxList('autocompleteLocalDemo', {
-    hintMessage: 'This is a simple Auto Complete Textbox List with it\'s data provided in an array and some values automatically selected'
+    hintMessage: 'This is a simple Auto Complete Textbox List with it\'s data provided in an array and some values automatically selected',
+    opacity: 1
   }, demoData);
                     </pre>
                     <input class="TBL" type="text" id="autocompleteLocalDemo" value="[{&quot;caption&quot;: &quot;JavaScript&quot;, &quot;value&quot;: 1173}, {&quot;caption&quot;: &quot;templates&quot;, &quot;value&quot;: 1735}, {&quot;caption&quot;: &quot;calendar entries&quot;, &quot;slug&quot;: &quot;calendar-entries&quot;, &quot;value&quot;: 21}]"/>
@@ -53,7 +54,8 @@
                     <pre>
   demos.autocompleteUrlDemo = new TextboxList('autocompleteUrlDemo', {
     url: '../demo/demoData.js',
-    hintMessage: 'This is a simple Auto Complete Textbox List searching/loading data from a url'
+    hintMessage: 'This is a simple Auto Complete Textbox List searching/loading data from a url',
+    opacity: 1
   });
                     </pre>
                     <input class="TBL" type="text" id="autocompleteUrlDemo" />
@@ -84,7 +86,8 @@
       printable: true
     }],
     noResultsMessage: 'There were no results found matching your search string.',
-    hintMessage: 'This is an advanced Auto Complete Textbox List with it\'s data provided in an array and some values automatically selected.  It has a log of different options set.'
+    hintMessage: 'This is an advanced Auto Complete Textbox List with it\'s data provided in an array and some values automatically selected.  It has a log of different options set.',
+    opacity: 1
   }, demoData);
                     </pre>
                     <input class="TBL" type="text" id="autocompleteAdvancedDemo" value="[{&quot;caption&quot;: &quot;JavaScript&quot;, &quot;value&quot;: 1173}, {&quot;caption&quot;: &quot;templates&quot;, &quot;value&quot;: 1735}, {&quot;caption&quot;: &quot;calendar entries&quot;, &quot;slug&quot;: &quot;calendar-entries&quot;, &quot;value&quot;: 21}]"/>
@@ -109,7 +112,8 @@
       character: ' ',
       printable: true
     }],
-    hintMessage: 'This list has no auto complete.  It is just a free typing list.'
+    hintMessage: 'This list has no auto complete.  It is just a free typing list.',
+    opacity: 1
   });
                     </pre>
                     <input class="TBL" type="text" id="typingListDemo" />
