@@ -909,7 +909,7 @@
       if (this.autoresults.childElements().size() === 0) {
         return;
       }
-      this.autoFocus(this.autocurrent[(direction == 'up' ? 'previous' : 'next')]('.bit-box, .bit-input'));
+      this.autoFocus(this.autocurrent[(direction == 'up' ? 'previous' : 'next')]('.auto-item'));
       this.autoresults.scrollTop = this.autocurrent.positionedOffset()[1] - this.autocurrent.getHeight();
       return this;
     },
