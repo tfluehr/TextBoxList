@@ -717,7 +717,7 @@
     createBox: function(val, options){
       var li = new Element('li', Object.extend(options, {
         'class': this.options.className + '-box'
-      })).update(val.caption).store('type', 'box');
+      })).update(val.caption.escapeHTML()).store('type', 'box');
       var a = new Element('a', {
         'href': '#',
         'class': 'closebutton'
