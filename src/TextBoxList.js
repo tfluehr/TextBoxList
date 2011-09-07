@@ -457,6 +457,7 @@
           this.focus(this.mainInput);
         }
         this.removeElement(el.up('li'));
+        this.focus(this.mainInput);
         return;
       }
       else if ((el = ev.findElement('.' + this.options.className + '-box'))) { // clicked on a selected item (not the x)
